@@ -1,0 +1,63 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.grid-container {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 8px; /* Optional spacing between cells */
+  padding: 8px; /* Outer border spacing */
+  
+  grid-template-columns: repeat(var(--cols, 6), 1fr);
+  grid-template-rows: repeat(var(--rows, 6), 1fr);
+}
+
+.grid-container.category {
+  width: auto;
+  height: auto;
+  grid-template-rows: repeat(1, 1fr);
+}
+
+.grid-cell {
+  container-type: inline-size;
+  background-color: #000080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: bold;
+  min-height: 0;
+  min-width: 0;
+}
+
+.grid-cell.clickable {
+  cursor: pointer;
+  color: #ffcc00;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.grid-cell.clickable:hover {
+  background-color: #0000b3;
+}
+
+.grid-cell > span {
+  font-size: clamp(12px, 22cqi, 48px); 
+  white-space: nowrap;
+}
+
+.grid-cell.category > span {
+  color: #ffffff;
+  font-size: clamp(10px, 14cqi, 24px);
+  padding: 8px;
+  white-space: normal;
+  text-align: center;
+}
