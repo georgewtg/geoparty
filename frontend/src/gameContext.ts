@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import defaultBoardData from '../boards/template.json';
+import defaultBoardData from '../boards/test.json';
 
 export type BoardData = typeof defaultBoardData;
 export const initialBoardData = defaultBoardData;

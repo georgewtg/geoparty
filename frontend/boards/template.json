@@ -5,66 +5,66 @@
       "id": "cat-1",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     },
     {
       "id": "cat-2",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     },
     {
       "id": "cat-3",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     },
     {
       "id": "cat-4",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     },
     {
       "id": "cat-5",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     },
     {
       "id": "cat-6",
       "name": "",
       "clues": [
-        { "value": 200, "question": "", "image": "", "answer": "" },
-        { "value": 400, "question": "", "image": "", "answer": "" },
-        { "value": 600, "question": "", "image": "", "answer": "" },
-        { "value": 800, "question": "", "image": "", "answer": "" },
-        { "value": 1000, "question": "", "image": "", "answer": "" }
+        { "value": 200, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 400, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 600, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 800, "question": "", "image": "", "audio": "", "answer": "" },
+        { "value": 1000, "question": "", "image": "", "audio": "", "answer": "" }
       ]
     }
   ]

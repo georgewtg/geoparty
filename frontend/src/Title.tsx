@@ -30,7 +30,7 @@ const Title = () => {
   return (
     <div className='page-container' onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
       <div className='text'>
-        {title}
+        {title ?? "JEOPARDY"}
       </div>
     </div>
   )
