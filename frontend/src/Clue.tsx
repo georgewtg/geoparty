@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGame } from './gameContext';
 import './Text.css'
 
-const Clue = () => {
+
+const Clue: React.FC = () => {
   const navigate = useNavigate();
   const { boardData } = useGame();
   const [searchParams] = useSearchParams();
@@ -63,5 +64,6 @@ const Clue = () => {
     </div>
   )
 }
+
 
 export default Clue;

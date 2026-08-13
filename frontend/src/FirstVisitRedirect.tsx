@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
+
 interface RedirectProps {
   firstTimePath: string;
   fallbackPath: string;
 }
+
 
 export const FirstVisitRedirect: React.FC<RedirectProps> = ({ 
   firstTimePath, 

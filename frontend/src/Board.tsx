@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from './gameContext';
 import './Board.css';
 
+
 interface BoardProps {
   rows?: number
   cols?: number
@@ -13,6 +14,7 @@ interface Player {
   name: string
   score: number
 }
+
 
 const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
   const navigate = useNavigate();
@@ -179,5 +181,6 @@ const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
     </>
   )
 }
+
 
 export default Board;
