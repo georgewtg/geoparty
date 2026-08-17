@@ -11,7 +11,7 @@ import './App.css';
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path='/' element={<FirstVisitRedirect firstTimePath='/menu' fallbackPath='/board'/>} />
+      <Route path='/' element={<FirstVisitRedirect firstTimePath='/menu' fallbackPath='/menu'/>} />
       <Route path='/menu' element={<Menu />} />
       <Route path='/title' element={<Title />} />
       <Route path='/board' element={<Board />} />

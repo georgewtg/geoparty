@@ -5,8 +5,8 @@ import './Board.css';
 
 
 interface BoardProps {
-  rows?: number
-  cols?: number
+  defaultRows?: number
+  defaultCols?: number
 }
 
 interface Player {
@@ -16,10 +16,12 @@ interface Player {
 }
 
 
-const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
+const Board: React.FC<BoardProps> = ({ defaultRows = 5, defaultCols = 6 }) => {
   const navigate = useNavigate();
   const { boardData } = useGame();
   const categories = boardData.categories;
+  const rows = categories[0].clues.length || defaultCols;
+  const cols = categories.length || defaultRows;
   const totalCells = rows * cols;
 
   // Track Clicked Cells
@@ -28,8 +30,8 @@ const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const handleClick = (colIndex: number, value: number) => {
-    const cellId = `${colIndex}-${value}`;
+  const handleClick = (colIndex: number, score: number) => {
+    const cellId = `${colIndex}-${score}`;
 
     if (!visitedCells.includes(cellId)) {
       const updated = [...visitedCells, cellId];
@@ -39,7 +41,7 @@ const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
 
     const categoryId = categories[colIndex].id;
 
-    navigate(`/clue?cat=${categoryId}&value=${value}`)
+    navigate(`/clue?cat=${categoryId}&score=${score}`)
   }
 
   // Initialize Player State
@@ -130,18 +132,18 @@ const Board: React.FC<BoardProps> = ({ rows = 5, cols = 6 }) => {
         {Array.from({ length: totalCells }).map((_, index) => {
           const rowIndex = Math.floor(index / cols);
           const colIndex = index % cols;
-          const value = categories?.[colIndex]?.clues?.[rowIndex]?.value ?? (rowIndex + 1) * 200;
+          const score = categories?.[colIndex]?.clues?.[rowIndex]?.score ?? (rowIndex + 1) * 200;
 
-          const cellId = `${colIndex}-${value}`;
+          const cellId = `${colIndex}-${score}`;
           const isVisited = visitedCells.includes(cellId);
 
           return (
             <div
               key={index}
               className={`grid-cell ${isVisited ? 'visited' : 'clickable'}`}
-              onClick={() => handleClick(colIndex, value)}
+              onClick={() => handleClick(colIndex, score)}
             >
-                <span>{value}</span>
+                <span>{score}</span>
             </div>
           );
         })}

@@ -10,11 +10,11 @@ const Clue: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const categoryId = searchParams.get('cat');
-  const valueParam = searchParams.get('value');
-  const value = valueParam !== null ? parseInt(valueParam, 10) : null;
+  const scoreParam = searchParams.get('score');
+  const score = scoreParam !== null ? parseInt(scoreParam, 10) : null;
 
   const category = boardData.categories.find((cat) => cat.id.toLowerCase() === categoryId?.toLowerCase());
-  const clue = (category && value !== null) ? category.clues.find((clue) => clue.value === value) : null;
+  const clue = (category && score !== null) ? category.clues.find((clue) => clue.score === score) : null;
 
   
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
@@ -44,25 +44,52 @@ const Clue: React.FC = () => {
 
   return (
     <div className='page-container' onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
+      {/* Question Score */}
+      <div className='score-display'>
+        ${clue?.score ?? ""}
+      </div>
+
       <div className='text'>
         {!showAnswer ? (
-          clue?.question ? (
-            clue.question
-          ) : clue?.image ? (
-            <img src={`../boards/asset/${clue.image}`} alt="Clue" />
-          ) : clue?.audio ? (
-            <audio controls src={`../boards/asset/${clue.audio}`}>
-              Your browser does not support the audio element.
-            </audio>
-          ) : ( 
-            "No Question Found"
-          )
+          clue?.question?.map((element, index) => {
+            if (element.type === "image") {
+              return (
+                <img key={index} src={`../boards/asset/${element.value}`} alt="clue" />
+              );
+            } else if (element.type === "audio") {
+              return (
+                <audio key={index} controls src={`../boards/asset/${element.value}`}>
+                  Your browser does not support the audio element.
+                </audio>
+              );
+            } else if (element.value) {
+              return <span key={index}>{element.value}</span>;
+            } else {
+              return <span key={index}>No Question Found</span>;
+            }
+          })
         ) : (
-          clue?.answer ?? "No Answer Found"
+          clue?.answer?.map((element, index) => {
+            if (element.type === "image") {
+              return (
+                <img key={index} src={`../boards/asset/${element.value}`} alt="clue" />
+              );
+            } else if (element.type === "audio") {
+              return (
+                <audio key={index} controls src={`../boards/asset/${element.value}`}>
+                  Your browser does not support the audio element.
+                </audio>
+              );
+            } else if (element.value) {
+              return <span key={index}>{element.value}</span>;
+            } else {
+              return <span key={index}>No Answer Found</span>;
+            }
+          })
         )}
       </div>
     </div>
-  )
+  );
 }
 
 
