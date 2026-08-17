@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from './gameContext';
 import './Text.css';
 
-const Title = () => {
+
+const Title: React.FC = () => {
   const navigate = useNavigate();
   const { boardData } = useGame();
   const title = boardData.title;
@@ -35,5 +36,6 @@ const Title = () => {
     </div>
   )
 }
+
 
 export default Title;
