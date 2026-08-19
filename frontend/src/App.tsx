@@ -6,6 +6,7 @@ import Board from './Board';
 import Clue from './Clue';
 import { FirstVisitRedirect } from './FirstVisitRedirect';
 import './App.css';
+import { CanvasEditor } from './CanvasEditor';
 
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
       <Route path='/title' element={<Title />} />
       <Route path='/board' element={<Board />} />
       <Route path='/clue' element={<Clue />} />
+      <Route path='/test' element={<CanvasEditor />} />
     </Routes>
   )
 }
