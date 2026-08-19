@@ -1,90 +1,68 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Text, Image, Transformer } from 'react-konva';
-import useImage from 'use-image';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Stage, Layer } from 'react-konva';
+import { CanvasItem, type BaseItem } from './CanvasItem';
 import type Konva from 'konva';
 import './CanvasEditor.css';
 
-interface ImageItem {
-  id: string;
-  x: number;
-  y: number;
-  src: string;
-  width?: number;
-  height?: number;
-}
-
-interface URLImageProps {
-  image: ImageItem;
-  isSelected: boolean;
-  onSelect: () => void;
-  onChange: (newAttrs: { x: number; y: number; width?: number; height?: number }) => void;
-}
-
-
-const URLImage: React.FC<URLImageProps> = ({ image, isSelected, onSelect, onChange }) => {
-  const [img] = useImage(image.src);
-  const shapeRef = useRef<Konva.Image>(null);
-  const trRef = useRef<Konva.Transformer>(null);
-
-  useEffect(() => {
-    if (isSelected && trRef.current && shapeRef.current) {
-      trRef.current.nodes([shapeRef.current]);
-    }
-  }, [isSelected]);
-
-  return (
-    <React.Fragment>
-      <Image
-        onClick={onSelect}
-        ref={shapeRef}
-        image={img}
-        {...image}
-        draggable
-        onDragEnd={(e) => {
-          onChange({
-            ...image,
-            x: e.target.x(),
-            y: e.target.y(),
-          });
-        }}
-        onTransformEnd={() => {
-          const node = shapeRef.current;
-          if (!node) return;
-
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-
-          node.scaleX(1);
-          node.scaleY(1);
-
-          onChange({
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, node.width() * scaleX),
-            height: Math.max(node.height() * scaleY),
-          });
-        }}
-      />
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-          flipEnabled={false}
-          boundBoxFunc={(oldBox, newBox) => {
-            if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
-              return oldBox;
-            }
-            return newBox;
-          }}
-        />
-      )}
-    </React.Fragment>
-  );
-};
-
 export const CanvasEditor: React.FC = () => {
   const stageRef = useRef<Konva.Stage | null>(null);
-  const [images, setImages] = useState<ImageItem[]>([]);
+
+  // History State Management
+  const [history, setHistory] = useState<BaseItem[][]>([[]]);
+  const [step, setStep] = useState<number>(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Current canvas state derived from history
+  const canvasItems = useMemo(() => {
+    return history[step] || [];
+  }, [history, step]);
+
+  // Commit new state to history safely using functional updates
+  const updateItems = useCallback((newItems: BaseItem[]) => {
+    setHistory((prevHistory) => {
+      const historySoFar = prevHistory.slice(0, step + 1);
+      return [...historySoFar, newItems];
+    });
+    setStep((prevStep) => prevStep + 1);
+  }, [step]);
+
+  // Undo / Redo / Delete
+  const handleUndo = useCallback(() => {
+    if (step > 0) {
+      setStep((prev) => prev - 1);
+    }
+  }, [step]);
+
+  const handleRedo = useCallback(() => {
+    if (step < history.length - 1) {
+      setStep((prev) => prev + 1);
+    }
+  }, [step, history.length]);
+
+  const handleDelete = useCallback(() => {
+    if (!selectedId) return;
+
+    const updatedImages = canvasItems.filter((img) => img.id !== selectedId);
+    updateItems(updatedImages);
+    setSelectedId(null);
+  }, [selectedId, canvasItems, updateItems]);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+
+      if (isCmdOrCtrl && e.key.toLowerCase() === 'z') handleUndo();
+      else if (isCmdOrCtrl && e.key.toLowerCase() === 'y') handleRedo();
+      else if (e.key === 'Delete' || e.key === 'Backspace') handleDelete();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo, handleDelete]);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -104,15 +82,17 @@ export const CanvasEditor: React.FC = () => {
         reader.onload = () => {
           if (typeof reader.result === 'string') {
             const newId = String(Date.now());
-            setImages((prevImages) => [
-              ...prevImages,
+            const newItems: BaseItem[] = [
+              ...canvasItems,
               {
                 id: newId,
+                type: 'image',
                 x: pointerPosition.x,
                 y: pointerPosition.y,
                 src: reader.result as string,
               },
-            ]);
+            ];
+            updateItems(newItems);
             setSelectedId(newId);
           }
         };
@@ -121,7 +101,6 @@ export const CanvasEditor: React.FC = () => {
     }
   };
 
-  // Deselect image when clicking on empty stage background
   const checkDeselect = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
@@ -129,8 +108,33 @@ export const CanvasEditor: React.FC = () => {
     }
   };
 
+  const handleAddItem = (type: 'text') => {
+    const newId = String(Date.now());
+    const newItem: BaseItem = {
+      id: newId,
+      type,
+      x: 100,
+      y: 100,
+      width: 150,
+      height: 100,
+      text: type === 'text' ? 'New Text' : undefined,
+    };
+    updateItems([...canvasItems, newItem]);
+    setSelectedId(newId);
+  };
+
   return (
     <div onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+      {/* Undo / Redo / Delete Toolbar */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, display: 'flex', gap: '8px' }}>
+        <button onClick={() => handleAddItem('text')}>+ Text</button>
+        <button onClick={handleUndo} disabled={step === 0}>Undo</button>
+        <button onClick={handleRedo} disabled={step === history.length - 1}>Redo</button>
+        <button onClick={handleDelete} disabled={!selectedId}>
+          Delete
+        </button>
+      </div>
+
       <Stage
         ref={stageRef}
         width={window.innerWidth}
@@ -139,17 +143,15 @@ export const CanvasEditor: React.FC = () => {
         onMouseDown={checkDeselect}
       >
         <Layer>
-          <Text text="Try to drag me" fontSize={15} draggable />
-          {images.map((image) => (
-            <URLImage
-              key={image.id}
-              image={image}
-              isSelected={image.id === selectedId}
-              onSelect={() => setSelectedId(image.id)}
-              onChange={(newAttrs) => {
-                setImages((prev) =>
-                  prev.map((img) => (img.id === image.id ? { ...img, ...newAttrs } : img))
-                );
+          {canvasItems.map((item) => (
+            <CanvasItem
+              key={item.id}
+              item={item}
+              isSelected={item.id === selectedId}
+              onSelect={() => setSelectedId(item.id)}
+              onChange={(updatedAttrs) => {
+                const updatedItems = canvasItems.map((i) => i.id === item.id ? updatedAttrs : i);
+                updateItems(updatedItems);
               }}
             />
           ))}
