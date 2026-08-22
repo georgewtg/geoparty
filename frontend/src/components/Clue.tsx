@@ -1,6 +1,6 @@
 import { useRef, useState} from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useGame } from './gameContext';
+import { useGame } from '../contexts/gameContext';
 import './Text.css'
 
 

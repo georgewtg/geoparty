@@ -1,18 +1,17 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Menu from './Menu';
-import Title from './Title';
-import Board from './Board';
-import Clue from './Clue';
-import { FirstVisitRedirect } from './FirstVisitRedirect';
+import Menu from './components/Menu';
+import Title from './components/Title';
+import Board from './components/Board';
+import Clue from './components/Clue';
 import './App.css';
-import { CanvasEditor } from './CanvasEditor';
+import { CanvasEditor } from './components/CanvasEditor';
 
 
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path='/' element={<FirstVisitRedirect firstTimePath='/menu' fallbackPath='/menu'/>} />
+      <Route path='/' element={<Menu />} />
       <Route path='/menu' element={<Menu />} />
       <Route path='/title' element={<Title />} />
       <Route path='/board' element={<Board />} />

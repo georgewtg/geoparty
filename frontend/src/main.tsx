@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
-import { GameProvider } from './GameProvider.tsx';
+import { GameProvider } from './contexts/GameProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -4,16 +4,25 @@ import { CanvasItem, type BaseItem } from './CanvasItem';
 import type Konva from 'konva';
 import './CanvasEditor.css';
 
+
 export const CanvasEditor: React.FC = () => {
   const stageRef = useRef<Konva.Stage | null>(null);
 
   // History State Management
-  const [history, setHistory] = useState<BaseItem[][]>([[]]);
-  const [step, setStep] = useState<number>(0);
+  const [history, setHistory] = useState<BaseItem[][]>(() => {
+    const savedHistory = sessionStorage.getItem('history');
+    return savedHistory ? JSON.parse(savedHistory) : [[]];
+  });
+  const [step, setStep] = useState<number>(() => {
+    const savedStep = sessionStorage.getItem('step');
+    return savedStep ? JSON.parse(savedStep) : 0;
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Current canvas state derived from history
   const canvasItems = useMemo(() => {
+    sessionStorage.setItem('history', JSON.stringify(history));
+    sessionStorage.setItem('step', JSON.stringify(step));
     return history[step] || [];
   }, [history, step]);
 

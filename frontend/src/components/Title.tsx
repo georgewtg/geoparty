@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from './gameContext';
+import { useGame } from '../contexts/gameContext';
 import './Text.css';
 
 
