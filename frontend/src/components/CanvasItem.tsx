@@ -7,7 +7,7 @@ import './CanvasEditor.css';
 
 type ItemType = 'shapes' | 'text' | 'image' | 'audio' | 'video';
 
-export interface BaseItem {
+export type BaseItem = {
   id: string;
   type: ItemType;
   x: number;
@@ -20,14 +20,14 @@ export interface BaseItem {
   text?: string;      // text
   fontSize?: number;  // text
   fill?: string;      // shapes/text
-}
+};
 
-interface CanvasItemProps {
+type CanvasItemProps = {
   item: BaseItem;
   isSelected: boolean;
   onSelect: () => void;
   onChange: (newAttrs: BaseItem) => void;
-}
+};
 
 
 export const CanvasItem: React.FC<CanvasItemProps> = ({ item, isSelected, onSelect, onChange }) => {

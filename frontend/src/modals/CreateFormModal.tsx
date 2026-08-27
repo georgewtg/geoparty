@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createGame } from "../api/game.api";
-import type { CreateGamePayload } from "../types/game";
-import './FloatingFormModal.css';
+import { createBoard } from "../api/board.api";
+import type { CreateBoardPayload } from "../types/board";
+import './CreateFormModal.css';
 
-interface FloatingFormModalProps {
+type CreateFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
-}
+};
 
-const FloatingFormModal: React.FC<FloatingFormModalProps> = ({ isOpen, onClose }) => {
+const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<CreateGamePayload>({
+  const [formData, setFormData] = useState<CreateBoardPayload>({
     name: "GeoParty Template",
     title: "GeoParty",
     num_of_categories: 6,
@@ -41,11 +40,11 @@ const FloatingFormModal: React.FC<FloatingFormModalProps> = ({ isOpen, onClose }
     setError(null);
 
     try {
-      const data = await createGame(formData);
-      navigate(`/game/${data.payload}`);
+      const data = await createBoard(formData);
+      navigate(`/board/${data.payload}`);
 
     } catch (error) {
-      setError('Failed to fetch game data');
+      setError('Failed to create board');
       console.error(error);
 
     } finally {
@@ -57,7 +56,7 @@ const FloatingFormModal: React.FC<FloatingFormModalProps> = ({ isOpen, onClose }
     <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal">
         <div className="modal-header">
-          <h2>Create New Game</h2>
+          <h2>Create New Board</h2>
           <button className="close-button" onClick={onClose}>&times;</button>
         </div>
 
@@ -117,7 +116,7 @@ const FloatingFormModal: React.FC<FloatingFormModalProps> = ({ isOpen, onClose }
               Cancel
             </button>
             <button className="submit-button" type="submit" disabled={loading}>
-              {loading ? 'Submitting...' : 'Create Game'}
+              {loading ? 'Submitting...' : 'Create Board'}
             </button>
           </div>
         </form>
@@ -126,4 +125,4 @@ const FloatingFormModal: React.FC<FloatingFormModalProps> = ({ isOpen, onClose }
   );
 };
 
-export default FloatingFormModal;
+export default CreateFormModal;

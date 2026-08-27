@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAllTitles } from '../api/board.api';
+import CreateFormModal from '../modals/CreateFormModal';
+import type { BoardListItem } from '../types/board';
 import './Menu.css';
-import { fetchAllTitles } from '../api/game.api';
-import FloatingFormModal from '../modals/FloatingFormModal';
-import type { GameListItem } from '../types/game';
 
 
 const Menu: React.FC = () => {
   const navigate = useNavigate();
-  const [boards, setBoards] = useState<GameListItem[]>([]);
+  const [boards, setBoards] = useState<BoardListItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // load boards (list of game titles)
+  // load boards (list of board titles)
   useEffect(() => {
     const loadTitles = async () => {
       try {
@@ -21,7 +21,7 @@ const Menu: React.FC = () => {
         const data = await fetchAllTitles();
         setBoards(data.payload);
       } catch (error) {
-        setError('Failed to fetch game data');
+        setError('Failed to fetch board data');
         console.error(error);
       } finally {
         setLoading(false);
@@ -35,7 +35,7 @@ const Menu: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   const handleClick = (boardId: number) => {
-    navigate(`/game/${boardId}`);
+    navigate(`/board/${boardId}`);
   }
 
   return (
@@ -48,11 +48,11 @@ const Menu: React.FC = () => {
             </div>
           )
         })}
-       <button onClick={() => setIsModalOpen(true)}>+ Add Game</button>
-       <FloatingFormModal
+       <button onClick={() => setIsModalOpen(true)}>+ Create Board</button>
+       <CreateFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-      />
+        />
       </div>
     </>
   )

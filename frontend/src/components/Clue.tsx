@@ -3,10 +3,10 @@ import './Text.css'
 import type { ClueData, PageData } from '../types/board';
 
 
-interface ClueProps {
+type ClueProps = {
   clueData: ClueData;
   onNext: () => void;
-}
+};
 
 
 const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {

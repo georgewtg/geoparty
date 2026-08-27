@@ -3,18 +3,18 @@ import type { BoardData, ClueData } from '../types/board';
 import './Board.css';
 
 
-interface BoardProps {
+type BoardProps = {
   boardData: BoardData
   onSelectClue: (clueData: ClueData) => void;
   defaultRows?: number;
   defaultCols?: number;
-}
+};
 
-interface Player {
+type Player = {
   id: number;
   name: string;
   score: number;
-}
+};
 
 
 const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5, defaultCols = 6 }) => {

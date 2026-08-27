@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import './Text.css';
 
 
-interface TitleProps {
+type TitleProps = {
   title: string;
   onNext: () => void;
 }
