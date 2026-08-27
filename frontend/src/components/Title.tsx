@@ -1,14 +1,14 @@
 import { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGame } from '../contexts/gameContext';
 import './Text.css';
 
 
-const Title: React.FC = () => {
-  const navigate = useNavigate();
-  const { boardData } = useGame();
-  const title = boardData.title;
+interface TitleProps {
+  title: string;
+  onNext: () => void;
+}
 
+
+const Title: React.FC<TitleProps> = ({ title, onNext }) => {
   const startPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -25,13 +25,13 @@ const Title: React.FC = () => {
       return; // ignore navigate click
     }
 
-    navigate('/board');
+    onNext(); // go to next page
   };
 
   return (
     <div className='page-container' onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
       <div className='text'>
-        {title ?? "JEOPARDY"}
+        {title ?? "GeoParty"}
       </div>
     </div>
   )

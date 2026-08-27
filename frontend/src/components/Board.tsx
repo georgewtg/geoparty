@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGame } from '../contexts/gameContext';
+import type { BoardData, ClueData } from '../types/board';
 import './Board.css';
 
 
 interface BoardProps {
-  defaultRows?: number
-  defaultCols?: number
+  boardData: BoardData
+  onSelectClue: (clueData: ClueData) => void;
+  defaultRows?: number;
+  defaultCols?: number;
 }
 
 interface Player {
-  id: number
-  name: string
-  score: number
+  id: number;
+  name: string;
+  score: number;
 }
 
 
-const Board: React.FC<BoardProps> = ({ defaultRows = 5, defaultCols = 6 }) => {
-  const navigate = useNavigate();
-  const { boardData } = useGame();
+const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5, defaultCols = 6 }) => {
   const categories = boardData.categories;
   const rows = categories[0].clues.length || defaultCols;
   const cols = categories.length || defaultRows;
@@ -30,7 +29,7 @@ const Board: React.FC<BoardProps> = ({ defaultRows = 5, defaultCols = 6 }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const handleClick = (colIndex: number, score: number) => {
+  const handleClick = (colIndex: number, score: string) => {
     const cellId = `${colIndex}-${score}`;
 
     if (!visitedCells.includes(cellId)) {
@@ -39,9 +38,10 @@ const Board: React.FC<BoardProps> = ({ defaultRows = 5, defaultCols = 6 }) => {
       sessionStorage.setItem('visitedClues', JSON.stringify(updated));
     }
 
-    const categoryId = categories[colIndex].id;
-
-    navigate(`/clue?cat=${categoryId}&score=${score}`)
+    // navigate(`/clue?cat=${categoryId}&score=${score}`)
+    const selectedCategory = categories[colIndex];
+    const selectedClue = selectedCategory.clues.find((clue) => clue.score === score);
+    if (selectedClue) onSelectClue(selectedClue);
   }
 
   // Initialize Player State
@@ -50,8 +50,8 @@ const Board: React.FC<BoardProps> = ({ defaultRows = 5, defaultCols = 6 }) => {
     if (savedPlayers) {
       try {
         return JSON.parse(savedPlayers);
-      } catch (e) {
-        console.error('Failed to parse players from sessionStorage', e);
+      } catch (error) {
+        console.error('Failed to parse players from sessionStorage', error);
       }
     }
 

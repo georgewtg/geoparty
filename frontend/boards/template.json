@@ -6,7 +6,7 @@
       "name": "",
       "clues": [
         { 
-          "score": 200,
+          "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -15,7 +15,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -24,7 +24,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -33,7 +33,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -42,7 +42,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -57,7 +57,7 @@
       "name": "",
       "clues": [
         { 
-          "score": 200,
+          "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -66,7 +66,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -75,7 +75,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -84,7 +84,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -93,7 +93,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -107,7 +107,7 @@
       "id": "cat-3",
       "name": "",
       "clues": [
-        { "score": 200,
+        { "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -116,7 +116,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -125,7 +125,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -134,7 +134,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -143,7 +143,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -157,7 +157,7 @@
       "id": "cat-4",
       "name": "",
       "clues": [
-        { "score": 200,
+        { "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -166,7 +166,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -175,7 +175,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -184,7 +184,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -193,7 +193,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -207,7 +207,7 @@
       "id": "cat-5",
       "name": "",
       "clues": [
-        { "score": 200,
+        { "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -216,7 +216,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -225,7 +225,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -234,7 +234,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -243,7 +243,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -257,7 +257,7 @@
       "id": "cat-6",
       "name": "",
       "clues": [
-        { "score": 200,
+        { "score": "200",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -266,7 +266,7 @@
           ]
         },
         { 
-          "score": 400,
+          "score": "400",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -275,7 +275,7 @@
           ]
         },
         { 
-          "score": 600,
+          "score": "600",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -284,7 +284,7 @@
           ]
         },
         { 
-          "score": 800,
+          "score": "800",
           "question": [
             { "type": "", "value": "" }
           ],
@@ -293,7 +293,7 @@
           ]
         },
         { 
-          "score": 1000,
+          "score": "1000",
           "question": [
             { "type": "", "value": "" }
           ],
