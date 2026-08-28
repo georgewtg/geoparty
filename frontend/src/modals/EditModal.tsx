@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import "./EditModal.css"
 
 
@@ -54,13 +54,22 @@ const EditModal: React.FC<EditModalProps> = ({ onClick }) => {
     window.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (isDragging.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onClick();
+  };
+
   return (
     <button
       className="edit-button"
       ref={buttonRef}
       style={{ left: `${pos.x}px`, top: `${pos.y}px` }}
       onMouseDown={handleMouseDown}
-      onClick={onClick}
+      onClick={handleClick}
       aria-label="Edit Clue"
     >
       &#9998; {/* Pen / Edit Icon */}
