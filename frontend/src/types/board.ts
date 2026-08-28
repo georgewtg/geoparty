@@ -1,4 +1,5 @@
-export type DataType = 'TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO';
+export const DATA_TYPES = ['TEXT', 'IMAGE', 'AUDIO', 'VIDEO'] as const;
+export type DataType = (typeof DATA_TYPES)[number];
 export type BoardPage = 'TITLE' | 'BOARD' | 'CLUE';
 
 export type BoardData = {
@@ -43,5 +44,5 @@ export type CreateBoardPayload = {
 
 export type UpdateBoardPayload = {
   key: string;
-  value: string;
+  value: string | PageData[];
 }[]

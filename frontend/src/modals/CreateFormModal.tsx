@@ -91,7 +91,7 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
               <label htmlFor="categories">Categories</label>
               <input className="input"
                 id="categories"
-                name="categories"
+                name="num_of_categories"
                 type="number"
                 required
                 value={formData.num_of_categories}
@@ -102,7 +102,7 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
               <label htmlFor="questions">Questions</label>
               <input
                 id="questions"
-                name="questions"
+                name="num_of_questions"
                 type="number"
                 required
                 value={formData.num_of_questions}

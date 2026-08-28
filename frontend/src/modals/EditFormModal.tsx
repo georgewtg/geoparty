@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
-import type { BoardData, BoardItem, BoardPage } from "../types/board";
-import './EditFormModal.css';
 import { updateBoard } from "../api/board.api";
+import { uploadFileLocal } from "../api/upload.api";
+import {
+  DATA_TYPES,
+  type BoardData,
+  type BoardItem,
+  type BoardPage,
+  type ClueData,
+  type DataType,
+  type PageData
+} from "../types/board";
+import './EditFormModal.css';
 
 type EditFormModalProps = {
   isOpen: boolean;
@@ -9,14 +18,20 @@ type EditFormModalProps = {
   boardId: number;
   boardData: BoardData;
   setBoard: (board: BoardItem) => void;
+  isShowAnswer: boolean;
+  selectedClueInfo: { catIdx: number, clueIdx: number }
+  setClueData: ( clueData: ClueData ) => void;
   onClose: () => void;
 };
 
-const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, boardData, setBoard, onClose }) => {
+const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, boardData, setBoard, isShowAnswer, selectedClueInfo, setClueData, onClose }) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [tempBoardData, setTempBoardData] = useState<BoardData>(boardData);
   const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
+  const section = isShowAnswer ? 'answer' : 'question';
+  const {catIdx, clueIdx} = selectedClueInfo;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,17 +51,17 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     }));
   };
 
-  const getDiffUpdates = (): { key: string; value: string }[] => {
-    const updates: { key: string; value: string }[] = [];
+  const getDiffUpdates = (): { key: string; value: string | PageData[] }[] => {
+    const updates: { key: string; value: string | PageData[] }[] = [];
 
-    // Title Diff
+    // title diff
     if (tempBoardData.title !== boardData.title) {
       updates.push({ key: "title", value: tempBoardData.title });
     }
 
-    // Categories & Clues Diffs
+    // nested diff (category, clue, question, answer)
     tempBoardData.categories?.forEach((cat, catIdx) => {
-      const origCat = boardData.categories?.[catIdx];
+      const origCat = boardData.categories[catIdx];
 
       // Check category name change
       if (origCat && cat.name !== origCat.name) {
@@ -54,13 +69,25 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
       }
 
       // Check clues changes inside category
-      cat.clues?.forEach((clue, clueIdx) => {
-        const origClue = origCat?.clues?.[clueIdx];
+      cat.clues.forEach((clue, clueIdx) => {
+        const origClue = origCat.clues[clueIdx];
         if (origClue && clue.score !== origClue.score) {
           updates.push({
             key: `categories,${catIdx},clues,${clueIdx},score`,
             value: clue.score,
           });
+        }
+
+        // compare question items
+        const origQuestion = origClue.question;
+        if (clue.question && JSON.stringify(clue.question) !== JSON.stringify(origQuestion)) {
+          updates.push({ key: `categories,${catIdx},clues,${clueIdx},question`, value: clue.question });
+        }
+
+        // compare answer items
+        const origAnswer = origClue.answer;
+        if (clue.answer && JSON.stringify(clue.answer) !== JSON.stringify(origAnswer)) {
+          updates.push({ key: `categories,${catIdx},clues,${clueIdx},answer`, value: clue.answer });
         }
       });
     });
@@ -92,6 +119,84 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     });
   };
 
+  const handlePageDataChange = (
+    catIdx: number,
+    clueIdx: number,
+    section: 'question' | 'answer',
+    itemIdx: number,
+    field: 'type' | 'value',
+    value: string
+  ) => {
+    setTempBoardData((prev) => {
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      const targetClue = { ...updatedClues[clueIdx] };
+      const targetList = [...(targetClue[section] || [])];
+
+      targetList[itemIdx] = {
+        ...targetList[itemIdx],
+        [field]: value as DataType,
+      };
+
+      targetClue[section] = targetList;
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  }
+
+  const addPageDataItem = (
+    catIdx: number,
+    clueIdx: number,
+    section: 'question' | 'answer'
+  ) => {
+    setTempBoardData((prev) => {
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      const targetClue = { ...updatedClues[clueIdx] };
+      const newItem: PageData = { type: 'TEXT', value: '' };
+
+      targetClue[section] = [...(targetClue[section] || []), newItem];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  }
+
+  const removePageDataItem = (
+    catIdx: number,
+    clueIdx: number,
+    section: 'question' | 'answer',
+    itemIdx: number
+  ) => {
+    setTempBoardData((prev) => {
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      const targetClue = { ...updatedClues[clueIdx] };
+
+      targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  }
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setUploading(true);
+      const data = await uploadFileLocal(file);
+      return data
+    } catch (error) {
+      setError('Failed to upload file');
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -108,6 +213,7 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     try {
       const data = await updateBoard(boardId, updates);
       setBoard(data.payload);
+      setClueData(data.payload.board_data.categories[catIdx].clues[clueIdx]);
       onClose();
 
     } catch (error) {
@@ -119,12 +225,89 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     }
   };
 
+  const renderPageDataSection = (
+    catIdx: number,
+    clueIdx: number,
+    section: 'question' | 'answer',
+    items: PageData[] = []
+  ) => {
+    if (!Array.isArray(items)) items = [];
+
+    return (
+      <div className={`clue-section ${section}-section`}>
+        <div className="section-header row">
+          <button
+            type="button"
+            className="add-button"
+            onClick={() => addPageDataItem(catIdx, clueIdx, section)}
+          >
+            + Add Item
+          </button>
+        </div>
+
+        {items.map((item, itemIdx) => (
+          <div key={itemIdx} className="page-data-row row">
+            <select
+              value={item.type}
+              onChange={(e) =>
+                handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'type', e.target.value)
+              }
+            >
+              {DATA_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Value / Content URL"
+              value={item.value}
+              onChange={(e) =>
+                handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'value', e.target.value)
+              }
+              required
+            />
+
+            {/* Hidden File Input triggered by the Upload Button */}
+            <label className="upload-button">
+              {uploading ? 'Uploading...' : '📤'}
+              <input
+                type="file"
+                id={`file-upload-${catIdx}-${clueIdx}-${section}-${itemIdx}`}
+                style={{ display: 'none' }}
+                disabled={uploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const data = await handleFileUpload(file);
+                    const fileName = data?.payload || '';
+                    handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'value', fileName);
+                  }
+                }}
+              />
+            </label>
+
+            <button
+              type="button"
+              className="delete-button"
+              onClick={() => removePageDataItem(catIdx, clueIdx, section, itemIdx)}
+            >
+              🗑️
+            </button>
+          </div>
+        ))}
+      </div>
+    )
+  };
+
   const renderModal = () => {
     return (
       <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
         <div className="modal">
           <div className="modal-header">
-            <h2>{page === 'TITLE' ? 'Edit Title' : 'Edit Categories & Scores'}</h2>
+            <h2>{page === 'TITLE' ? 'Edit Title' : ( page === 'BOARD' ? 'Edit Categories & Score' : 'Edit Page' )}</h2>
             <button className="close-button" onClick={onClose}>&times;</button>
           </div>
 
@@ -183,6 +366,14 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {page === 'CLUE' && (
+              <div className="clues-container">
+                <div key={clueIdx} className="clue-edit-block">
+                  {renderPageDataSection(catIdx, clueIdx, section, tempBoardData.categories[catIdx].clues[clueIdx][section])}
+                </div>
               </div>
             )}
 

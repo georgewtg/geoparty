@@ -8,7 +8,7 @@ export const getAllTitleData = async () => {
       `SELECT id, name FROM boards`
     );
     
-    if (result.rows.length === 0) return null;
+    if (result.rows.length === 0) return [];
     return result.rows;
 
   } catch (error) {
@@ -51,7 +51,7 @@ export const addBoardData = async (
     categories[i-1] = { id: `cat-${i}`, name: `Category ${i}`, clues: clues }
   }
 
-  const json_data = { title, categories };
+  const json_data = JSON.stringify({ title, categories });
 
   try {
     const result = await query(

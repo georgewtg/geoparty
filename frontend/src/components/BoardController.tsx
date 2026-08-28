@@ -14,6 +14,8 @@ const BoardController: React.FC = () => {
   const { boardId } = useParams();
   const [page, setPage] = useState<BoardPage>('TITLE');
   const [board, setBoard] = useState<BoardItem | null>(null);
+  const [selectedClueInfo, setSelectedClueInfo] = useState({ catIdx: -1, clueIdx: -1 });
+  const [isShowAnswer, setIsShowAnswer] = useState(false);
   const [clueData, setClueData] = useState<ClueData>({ score: "", question: [], answer: [] });
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,7 +44,8 @@ const BoardController: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
   if (!board) return <div>Board not found</div>;
 
-  const handleSelectClue = (clueData: ClueData) => {
+  const handleSelectClue = (clueData: ClueData, catIdx: number, clueIdx: number) => {
+    setSelectedClueInfo({ catIdx, clueIdx});
     setClueData(clueData);
     setPage('CLUE');
   };
@@ -50,7 +53,7 @@ const BoardController: React.FC = () => {
   const pageMap: Record<string, React.ReactNode> = {
     TITLE: <Title title={board.board_data.title} onNext={() => setPage('BOARD')} />,
     BOARD: <Board boardData={board.board_data} onSelectClue={handleSelectClue} />,
-    CLUE: <Clue clueData={clueData} onNext={() => setPage('BOARD')} />,
+    CLUE: <Clue clueData={clueData} isShowAnswer={isShowAnswer} setIsShowAnswer={setIsShowAnswer} onNext={() => setPage('BOARD')} />,
   };
 
   return (
@@ -70,6 +73,9 @@ const BoardController: React.FC = () => {
         boardId={board.id}
         boardData={board.board_data}
         setBoard={setBoard}
+        selectedClueInfo={selectedClueInfo}
+        setClueData={setClueData}
+        isShowAnswer={isShowAnswer}
         onClose={() => setIsModalOpen(false)}
         />
     </div>

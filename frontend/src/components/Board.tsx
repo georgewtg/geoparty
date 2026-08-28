@@ -5,7 +5,7 @@ import './Board.css';
 
 type BoardProps = {
   boardData: BoardData
-  onSelectClue: (clueData: ClueData) => void;
+  onSelectClue: (clueData: ClueData, catIdx: number, clueIdx: number) => void;
   defaultRows?: number;
   defaultCols?: number;
 };
@@ -29,8 +29,8 @@ const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5,
     return saved ? JSON.parse(saved) : [];
   });
 
-  const handleClick = (colIndex: number, score: string) => {
-    const cellId = `${colIndex}-${score}`;
+  const handleClick = (colIndex: number, rowIndex: number) => {
+    const cellId = `${colIndex}-${rowIndex}`;
 
     if (!visitedCells.includes(cellId)) {
       const updated = [...visitedCells, cellId];
@@ -40,8 +40,8 @@ const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5,
 
     // navigate(`/clue?cat=${categoryId}&score=${score}`)
     const selectedCategory = categories[colIndex];
-    const selectedClue = selectedCategory.clues.find((clue) => clue.score === score);
-    if (selectedClue) onSelectClue(selectedClue);
+    const selectedClue = selectedCategory.clues[rowIndex];
+    if (selectedClue) onSelectClue(selectedClue, colIndex, rowIndex);
   }
 
   // Initialize Player State
@@ -134,14 +134,14 @@ const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5,
           const colIndex = index % cols;
           const score = categories?.[colIndex]?.clues?.[rowIndex]?.score ?? (rowIndex + 1) * 200;
 
-          const cellId = `${colIndex}-${score}`;
+          const cellId = `${colIndex}-${rowIndex}`;
           const isVisited = visitedCells.includes(cellId);
 
           return (
             <div
               key={index}
               className={`grid-cell ${isVisited ? 'visited' : 'clickable'}`}
-              onClick={() => handleClick(colIndex, score)}
+              onClick={() => handleClick(colIndex, rowIndex)}
             >
                 <span>{score}</span>
             </div>
