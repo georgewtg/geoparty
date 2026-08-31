@@ -8,6 +8,7 @@ import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
 import EditModal from "../modals/EditModal";
 import EditFormModal from "../modals/EditFormModal";
+import ScoreBoard from "../modals/ScoreBoard";
 
 
 const BoardController: React.FC = () => {
@@ -45,7 +46,7 @@ const BoardController: React.FC = () => {
   if (!board) return <div>Board not found</div>;
 
   const handleSelectClue = (clueData: ClueData, catIdx: number, clueIdx: number) => {
-    setSelectedClueInfo({ catIdx, clueIdx});
+    setSelectedClueInfo({ catIdx, clueIdx });
     setClueData(clueData);
     setPage('CLUE');
   };
@@ -63,7 +64,8 @@ const BoardController: React.FC = () => {
       display: "flex",
       flexDirection: "column",
       position: "relative",
-      overflow: "hidden"
+      overflow: "hidden",
+      paddingBottom: "50px"
     }}>
       {pageMap[page] ?? <div>Page not found</div>}
       <EditModal onClick={() => setIsModalOpen(true)} />
@@ -78,9 +80,10 @@ const BoardController: React.FC = () => {
         isShowAnswer={isShowAnswer}
         onClose={() => setIsModalOpen(false)}
         />
+      <ScoreBoard />
     </div>
   );
-}
+};
 
 
 export default BoardController;

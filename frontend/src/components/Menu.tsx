@@ -55,8 +55,8 @@ const Menu: React.FC = () => {
         />
       </div>
     </>
-  )
-}
+  );
+};
 
 
 export default Menu;

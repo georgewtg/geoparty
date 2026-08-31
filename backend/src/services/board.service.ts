@@ -1,5 +1,5 @@
 import { query } from "../db";
-import { CategoryData, ClueData } from "../types/board";
+import { CategoryData, ClueData, PageData } from "../types/board";
 
 
 export const getAllTitleData = async () => {
@@ -51,7 +51,8 @@ export const addBoardData = async (
     categories[i-1] = { id: `cat-${i}`, name: `Category ${i}`, clues: clues }
   }
 
-  const json_data = JSON.stringify({ title, categories });
+  const final_jeopardy: PageData[] = [];
+  const json_data = JSON.stringify({ title, categories, final_jeopardy });
 
   try {
     const result = await query(

@@ -74,7 +74,7 @@ const EditModal: React.FC<EditModalProps> = ({ onClick }) => {
     >
       &#9998; {/* Pen / Edit Icon */}
     </button>
-  )
-}
+  );
+};
 
 export default EditModal;

@@ -55,7 +55,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
     <div className='page-container'>
       {/* Question Score */}
       <div className='score-display'>
-        ${clueData.score ?? ""}
+        {clueData.score ?? ""}
       </div>
 
       {/* Left Arrow / Previous Page */}
@@ -87,7 +87,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
       </button>
     </div>
   );
-}
+};
 
 
 export default Clue;

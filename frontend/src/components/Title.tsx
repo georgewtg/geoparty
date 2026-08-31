@@ -34,8 +34,8 @@ const Title: React.FC<TitleProps> = ({ title, onNext }) => {
         {title ?? "GeoParty"}
       </div>
     </div>
-  )
-}
+  );
+};
 
 
 export default Title;

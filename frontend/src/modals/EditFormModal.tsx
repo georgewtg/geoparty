@@ -92,6 +92,19 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
       });
     });
 
+    // final jeopardy diff
+    const origFinalQuestion = boardData.final_jeopardy.question;
+    const origFinalAnswer = boardData.final_jeopardy.answer;
+    const tempFinalQuestion = tempBoardData.final_jeopardy.question;
+    const tempFinalAnswer = tempBoardData.final_jeopardy.answer;
+    if (tempFinalQuestion && JSON.stringify(tempFinalQuestion) !== JSON.stringify(origFinalQuestion)) {
+      updates.push({ key: `final_jeopardy,question`, value: tempFinalQuestion });
+    }
+    if (tempFinalAnswer && JSON.stringify(tempFinalAnswer) !== JSON.stringify(origFinalAnswer)) {
+      updates.push({ key: `final_jeopardy,answer`, value: tempFinalAnswer });
+    }
+
+
     return updates;
   };
 
@@ -127,23 +140,39 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     field: 'type' | 'value',
     value: string
   ) => {
-    setTempBoardData((prev) => {
-      const updatedCategories = [...(prev.categories || [])];
-      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-      const targetClue = { ...updatedClues[clueIdx] };
-      const targetList = [...(targetClue[section] || [])];
+    if (catIdx === -1 && clueIdx === -1) {
+      setTempBoardData((prev) => {
+        const targetClue = { ...prev.final_jeopardy };
+        const targetList = [...(targetClue[section] || [])];
 
-      targetList[itemIdx] = {
-        ...targetList[itemIdx],
-        [field]: value as DataType,
-      };
+        targetList[itemIdx] = {
+          ...targetList[itemIdx],
+          [field]: value as DataType,
+        };
 
-      targetClue[section] = targetList;
-      updatedClues[clueIdx] = targetClue;
-      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+        targetClue[section] = targetList;
 
-      return { ...prev, categories: updatedCategories };
-    });
+        return { ...prev, final_jeopardy: targetClue };
+      });
+    } else {
+      setTempBoardData((prev) => {
+        const updatedCategories = [...(prev.categories || [])];
+        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+        const targetClue = { ...updatedClues[clueIdx] };
+        const targetList = [...(targetClue[section] || [])];
+
+        targetList[itemIdx] = {
+          ...targetList[itemIdx],
+          [field]: value as DataType,
+        };
+
+        targetClue[section] = targetList;
+        updatedClues[clueIdx] = targetClue;
+        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+        return { ...prev, categories: updatedCategories };
+      });
+    }
   }
 
   const addPageDataItem = (
@@ -151,18 +180,29 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     clueIdx: number,
     section: 'question' | 'answer'
   ) => {
-    setTempBoardData((prev) => {
-      const updatedCategories = [...(prev.categories || [])];
-      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-      const targetClue = { ...updatedClues[clueIdx] };
-      const newItem: PageData = { type: 'TEXT', value: '' };
+    if (catIdx === -1 && clueIdx === -1) {
+      setTempBoardData((prev) => {
+        const targetClue = { ...prev.final_jeopardy };
+        const newItem: PageData = { type: 'TEXT', value: '' };
 
-      targetClue[section] = [...(targetClue[section] || []), newItem];
-      updatedClues[clueIdx] = targetClue;
-      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+        targetClue[section] = [...(targetClue[section] || []), newItem];
 
-      return { ...prev, categories: updatedCategories };
-    });
+        return { ...prev, final_jeopardy: targetClue };
+      });
+    } else {
+      setTempBoardData((prev) => {
+        const updatedCategories = [...(prev.categories || [])];
+        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+        const targetClue = { ...updatedClues[clueIdx] };
+        const newItem: PageData = { type: 'TEXT', value: '' };
+
+        targetClue[section] = [...(targetClue[section] || []), newItem];
+        updatedClues[clueIdx] = targetClue;
+        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+        return { ...prev, categories: updatedCategories };
+      });
+    }
   }
 
   const removePageDataItem = (
@@ -171,17 +211,27 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     section: 'question' | 'answer',
     itemIdx: number
   ) => {
-    setTempBoardData((prev) => {
-      const updatedCategories = [...(prev.categories || [])];
-      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-      const targetClue = { ...updatedClues[clueIdx] };
+    if (catIdx === -1 && clueIdx === -1) {
+      setTempBoardData((prev) => {
+        const targetClue = { ...prev.final_jeopardy };
 
-      targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
-      updatedClues[clueIdx] = targetClue;
-      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+        targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
 
-      return { ...prev, categories: updatedCategories };
-    });
+        return { ...prev, final_jeopardy: targetClue };
+      });
+    } else {
+      setTempBoardData((prev) => {
+        const updatedCategories = [...(prev.categories || [])];
+        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+        const targetClue = { ...updatedClues[clueIdx] };
+
+        targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
+        updatedClues[clueIdx] = targetClue;
+        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+        return { ...prev, categories: updatedCategories };
+      });
+    }
   }
 
   const handleFileUpload = async (file: File) => {
@@ -213,7 +263,8 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
     try {
       const data = await updateBoard(boardId, updates);
       setBoard(data.payload);
-      setClueData(data.payload.board_data.categories[catIdx].clues[clueIdx]);
+      if (catIdx === -1 && clueIdx === -1) setClueData(data.payload.board_data.final_jeopardy);
+      else setClueData(data.payload.board_data.categories[catIdx].clues[clueIdx]);
       onClose();
 
     } catch (error) {
@@ -372,7 +423,7 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
             {page === 'CLUE' && (
               <div className="clues-container">
                 <div key={clueIdx} className="clue-edit-block">
-                  {renderPageDataSection(catIdx, clueIdx, section, tempBoardData.categories[catIdx].clues[clueIdx][section])}
+                  {renderPageDataSection(catIdx, clueIdx, section, (catIdx === -1 && clueIdx === -1) ? tempBoardData.final_jeopardy[section] : tempBoardData.categories[catIdx].clues[clueIdx][section])}
                 </div>
               </div>
             )}
