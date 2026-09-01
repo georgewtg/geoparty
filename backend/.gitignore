@@ -23,10 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Ignore Jeopardy Board Except Template
-boards/*
-!boards/template.json
-
 # dotenv environment variable files
 .env
 .env.development.local

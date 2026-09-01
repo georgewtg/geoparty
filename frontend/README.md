@@ -1,1 +1,1 @@
-# Jeopardy
+# GeoParty

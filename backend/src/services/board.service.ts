@@ -17,7 +17,7 @@ export const getAllTitleData = async () => {
   }
 };
 
-export const getBoardData = async (boardId: number) => {
+export const getBoardData = async (boardId: string) => {
   try {
     const result = await query(
       `SELECT * FROM boards WHERE id = $1`,

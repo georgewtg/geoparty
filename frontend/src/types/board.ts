@@ -26,12 +26,12 @@ export type PageData = {
 };
 
 export type BoardListItem = {
-  id: number;
+  id: string;
   name: string;
 };
 
 export type BoardItem = {
-  id: number;
+  id: string;
   name: string;
   board_data: BoardData;
 };

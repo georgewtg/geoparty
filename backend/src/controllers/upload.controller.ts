@@ -9,7 +9,7 @@ export const uploadFileLocal = async (req: Request, res: Response) => {
     const payload = await uploadService.uploadFileDataLocal(req.file);
     if (!payload) return res.status(404).json({ success: false, message: 'Failed to upload file locally' });
     
-    res.status(200).json({ success: true, payload })
+    res.status(200).json({ success: true, payload });
 
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });

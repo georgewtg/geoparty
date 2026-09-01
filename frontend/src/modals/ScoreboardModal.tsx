@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import './ScoreBoard.css'
+import './ScoreboardModal.css'
 
 type Player = {
   id: number;

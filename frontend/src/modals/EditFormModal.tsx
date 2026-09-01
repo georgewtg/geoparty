@@ -15,7 +15,7 @@ import './EditFormModal.css';
 type EditFormModalProps = {
   isOpen: boolean;
   page: BoardPage;
-  boardId: number;
+  boardId: string;
   boardData: BoardData;
   setBoard: (board: BoardItem) => void;
   isShowAnswer: boolean;

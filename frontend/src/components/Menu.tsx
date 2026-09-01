@@ -34,7 +34,7 @@ const Menu: React.FC = () => {
   if (loading) return <div>Fetching Boards...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const handleClick = (boardId: number) => {
+  const handleClick = (boardId: string) => {
     navigate(`/board/${boardId}`);
   }
 

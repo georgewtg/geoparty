@@ -8,7 +8,7 @@ import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
 import EditModal from "../modals/EditModal";
 import EditFormModal from "../modals/EditFormModal";
-import ScoreBoard from "../modals/ScoreBoard";
+import ScoreBoard from "../modals/ScoreboardModal";
 
 
 const BoardController: React.FC = () => {
@@ -26,7 +26,8 @@ const BoardController: React.FC = () => {
     const loadBoard = async () => {
       try {
         setLoading(true);
-        const data = await fetchBoard(parseInt(boardId ?? '', 10));
+        if (!boardId) throw new Error("Board ID is missing");
+        const data = await fetchBoard(boardId);
         setBoard(data.payload);
 
       } catch (error) {
