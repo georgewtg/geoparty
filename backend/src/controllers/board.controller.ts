@@ -45,7 +45,7 @@ export const addBoard = async (req: Request, res: Response) => {
 
 export const editBoard = async (req: Request, res: Response) => {
   try {
-    const boardId = Number(req.params.id);
+    const boardId = req.params.id as string;
     const updates = req.body;
 
     const payload = await boardService.editBoardData(boardId, updates);

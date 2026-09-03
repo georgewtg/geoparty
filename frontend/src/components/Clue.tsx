@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { ClueData, PageData } from '../types/board';
+import { useAuth } from '../context/AuthContext';
 import './Text.css'
 
 
@@ -12,6 +13,8 @@ type ClueProps = {
 
 
 const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, onNext }) => {
+  const { user } = useAuth();
+
   useEffect(() => {
     setIsShowAnswer(false);
   }, [setIsShowAnswer]);
@@ -27,21 +30,24 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
 
   const renderClue = (items: PageData[], fallbackText: string) => {
     if (!Array.isArray(items) || !items || items.length === 0) return <span>{fallbackText}</span>;
-    const assetPath = "http://localhost:8000/assets"
+    // const assetPath = "http://localhost:8000/assets";
+    const basePath = `${import.meta.env.VITE_CLOUDINARY_BASE_URL}`;
+    const assetPath = `upload/geoparty/assets/${user?.id}`;
 
     return items.map((element, index) => {
       switch (element.type) {
         case 'IMAGE':
-          return <img key={index} src={`${assetPath}/${element.value}`} alt="clue" />;
+          console.log(`${assetPath}/${element.value}`)
+          return <img key={index} src={`${basePath}/image/${assetPath}/${element.value}`} alt="clue" />;
         case 'AUDIO':
           return (
-            <audio key={index} controls src={`${assetPath}/${element.value}`}>
+            <audio key={index} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
               Your browser does not support the audio element.
             </audio>
           );
         case 'VIDEO':
           return (
-            <video key={index} controls src={`${assetPath}/${element.value}`}>
+            <video key={index} controls src={`${basePath}/image/${assetPath}/${element.value}`}>
               Your browser does not support the video tag.
             </video>
           );

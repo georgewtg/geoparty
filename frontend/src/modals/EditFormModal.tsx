@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { updateBoard } from "../api/board.api";
-import { uploadFileLocal } from "../api/upload.api";
+import { uploadFile } from "../api/upload.api";
 import {
   DATA_TYPES,
   type BoardData,
@@ -11,6 +11,7 @@ import {
   type PageData
 } from "../types/board";
 import './EditFormModal.css';
+import { useAuth } from "../context/AuthContext";
 
 type EditFormModalProps = {
   isOpen: boolean;
@@ -32,6 +33,7 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
   const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
   const section = isShowAnswer ? 'answer' : 'question';
   const {catIdx, clueIdx} = selectedClueInfo;
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -237,8 +239,10 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
   const handleFileUpload = async (file: File) => {
     try {
       setUploading(true);
-      const data = await uploadFileLocal(file);
-      return data
+      if (!user) throw new Error('User must be logged in to upload files');
+
+      const data = uploadFile(file, user.id);
+      return data;
     } catch (error) {
       setError('Failed to upload file');
       console.error(error);
@@ -333,7 +337,7 @@ const EditFormModal: React.FC<EditFormModalProps> = ({ isOpen, page, boardId, bo
                   const file = e.target.files?.[0];
                   if (file) {
                     const data = await handleFileUpload(file);
-                    const fileName = data?.payload || '';
+                    const fileName = data?.public_id.split('/').pop() || '';
                     handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'value', fileName);
                   }
                 }}

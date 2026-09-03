@@ -3,6 +3,7 @@ export type DataType = 'TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO';
 export type BoardData = {
   title: string;
   categories: CategoryData[];
+  final_jeopardy: ClueData;
 }
 
 export type CategoryData = {
