@@ -60,6 +60,13 @@
   flex-shrink: 0;
 }
 
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button,
+audio::-webkit-media-controls-volume-slider,
+audio::-webkit-media-controls-mute-button {
+  display: none !important;
+}
+
 .score-display {
   position: absolute;
   top: 16px;

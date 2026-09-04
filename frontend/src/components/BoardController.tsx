@@ -7,7 +7,6 @@ import Clue from "./Clue";
 import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
 import EditModal from "../modals/EditModal";
-import EditFormModal from "../modals/EditFormModal";
 import ScoreBoard from "../modals/ScoreboardModal";
 
 
@@ -18,7 +17,6 @@ const BoardController: React.FC = () => {
   const [selectedClueInfo, setSelectedClueInfo] = useState({ catIdx: -1, clueIdx: -1 });
   const [isShowAnswer, setIsShowAnswer] = useState(false);
   const [clueData, setClueData] = useState<ClueData>({ score: "", question: [], answer: [] });
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,9 +67,7 @@ const BoardController: React.FC = () => {
       paddingBottom: "50px"
     }}>
       {pageMap[page] ?? <div>Page not found</div>}
-      <EditModal onClick={() => setIsModalOpen(true)} />
-      <EditFormModal
-        isOpen={isModalOpen}
+      <EditModal
         page={page}
         boardId={board.id}
         boardData={board.board_data}
@@ -79,8 +75,7 @@ const BoardController: React.FC = () => {
         selectedClueInfo={selectedClueInfo}
         setClueData={setClueData}
         isShowAnswer={isShowAnswer}
-        onClose={() => setIsModalOpen(false)}
-        />
+      />
       <ScoreBoard />
     </div>
   );

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import * as accountService from '../services/account.service'
-import { setAuthCookie } from '../utils/cookie';
+import { clearAuthCookie, setAuthCookie } from '../utils/cookie';
 
 
 export const register = async (req: Request, res: Response) => {
@@ -39,6 +39,16 @@ export const login = async (req: Request, res: Response) => {
 
     setAuthCookie(res, user.id);
     res.status(200).json({ success: true, user });
+    
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    clearAuthCookie(res);
+    res.status(200).json({ success: true, payload: null });
     
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });

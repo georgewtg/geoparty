@@ -69,7 +69,7 @@ const Register: React.FC = () => {
             <div className="row">
               <input name="confirm_password" type="password" onChange={(e) => handleChange(e.target.name, e.target.value)} value={formData.confirm_password} placeholder="Confirm Password" required />
             </div>
-            <div className="row button">
+            <div className="button">
               <input type="submit" value={loading ? "Registering..." : "Register"} />
             </div>
             <div className='link'>Already have an account? <a href="login">login now</a></div>

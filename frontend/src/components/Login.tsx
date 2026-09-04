@@ -59,7 +59,7 @@ const Login: React.FC = () => {
               <input name="password" type="password" onChange={(e) => handleChange(e.target.name, e.target.value)} value={formData.password} placeholder="Password" required />
             </div>
             {/* <div className="pass"><a href="#">Forgot password?</a></div> */}
-            <div className="row button">
+            <div className="button login">
               <input type="submit" value={loading ? "Logging in..." : "Login"} />
             </div>
             <div className='link'>Don't have an account? <a href="register">register now</a></div>

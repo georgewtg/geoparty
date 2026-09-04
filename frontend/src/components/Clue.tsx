@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { ClueData, PageData } from '../types/board';
 import { useAuth } from '../context/AuthContext';
+import { useVolume } from '../context/VolumeContext';
 import './Text.css'
 
 
@@ -11,9 +12,12 @@ type ClueProps = {
   onNext: () => void;
 };
 
-
 const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, onNext }) => {
   const { user } = useAuth();
+  const { getAudioVolume } = useVolume();
+  const mediaRef = (node: HTMLMediaElement | null) => {
+    if (node) node.volume = getAudioVolume();
+  }
 
   useEffect(() => {
     setIsShowAnswer(false);
@@ -41,13 +45,13 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
           return <img key={index} src={`${basePath}/image/${assetPath}/${element.value}`} alt="clue" />;
         case 'AUDIO':
           return (
-            <audio key={index} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
+            <audio key={index} ref={mediaRef} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
               Your browser does not support the audio element.
             </audio>
           );
         case 'VIDEO':
           return (
-            <video key={index} controls src={`${basePath}/image/${assetPath}/${element.value}`}>
+            <video key={index} ref={mediaRef} controls src={`${basePath}/image/${assetPath}/${element.value}`}>
               Your browser does not support the video tag.
             </video>
           );

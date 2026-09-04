@@ -18,3 +18,8 @@ export const loginAccount = async (formData: LoginAccountPayload): Promise<ApiRe
   const response = await api.post<ApiResponse<AccountData>>('/account/login', formData);
   return response.data;
 };
+
+export const logoutAccount = async (): Promise<ApiResponse<null>> => {
+  const response = await api.post<ApiResponse<null>>('/account/logout');
+  return response.data;
+};
