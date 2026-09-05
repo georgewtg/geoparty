@@ -1,9 +1,7 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import http from 'http';
 // import { Server } from 'socket.io';
 import app from './app';
-
-dotenv.config();
 
 const port = process.env.PORT || 8000;
 const server = http.createServer(app);
