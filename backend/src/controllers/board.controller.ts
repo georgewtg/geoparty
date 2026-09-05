@@ -31,9 +31,11 @@ export const getBoard = async (req: Request, res: Response) => {
 
 export const addBoard = async (req: Request, res: Response) => {
   try {
-    const { name, title, num_of_categories, num_of_questions } = req.body;
+    const { userId, name, title, num_of_categories, num_of_questions } = req.body;
 
-    const payload = await boardService.addBoardData(name, title, num_of_categories, num_of_questions);
+    if (!userId) return res.status(400).json({ success: false, message: 'User ID is required' });
+
+    const payload = await boardService.addBoardData(userId, name, title, num_of_categories, num_of_questions);
     if (!payload) return res.status(404).json({ success: false, message: 'Failed to Create Board Board' });
     
     res.status(200).json({ success: true, payload });

@@ -16,8 +16,7 @@ export type CategoryData = {
 
 export type ClueData = {
   score: string;
-  question: PageData[];
-  answer: PageData[];
+  pages: PageData[][];
 };
 
 export type PageData = {
@@ -37,6 +36,7 @@ export type BoardItem = {
 };
 
 export type CreateBoardPayload = {
+  userId: string;
   name: string;
   title: string;
   num_of_categories: number;
@@ -45,5 +45,5 @@ export type CreateBoardPayload = {
 
 export type UpdateBoardPayload = {
   key: string;
-  value: string | PageData[];
+  value: string | PageData[][];
 }[]

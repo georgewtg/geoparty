@@ -14,8 +14,7 @@ export type CategoryData = {
 
 export type ClueData = {
   score: string;
-  question: PageData[];
-  answer: PageData[];
+  pages: PageData[][];
 }
 
 export type PageData = {

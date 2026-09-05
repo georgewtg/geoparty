@@ -18,7 +18,7 @@ export const register = async (req: Request, res: Response) => {
     if (!user) return res.status(400).json({ success: false, message: 'Failed to register account' });
 
     setAuthCookie(res, user.id);
-    return res.status(201).json({ success: true, user });
+    return res.status(201).json({ success: true, payload: user });
     
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -38,7 +38,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     setAuthCookie(res, user.id);
-    res.status(200).json({ success: true, user });
+    res.status(200).json({ success: true, payload: user });
     
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -66,9 +66,10 @@ export const checkAuth = async (req: Request, res: Response) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number | string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const user = await accountService.fetchAccount(decoded.userId);
 
-    res.status(200).json({ success: true, payload: { isAuthenticated: true, user: { id: decoded.userId } } });
+    res.status(200).json({ success: true, payload: { isAuthenticated: true, user: user } });
     
   } catch (error) {
     res.status(200).json({ success: true, payload: { isAuthenticated: false, user: null } });

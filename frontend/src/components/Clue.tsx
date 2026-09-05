@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import type { ClueData, PageData } from '../types/board';
 import { useAuth } from '../context/AuthContext';
 import { useVolume } from '../context/VolumeContext';
@@ -7,32 +7,31 @@ import './Text.css'
 
 type ClueProps = {
   clueData: ClueData;
-  isShowAnswer: boolean;
-  setIsShowAnswer: (status: boolean) => void;
   onNext: () => void;
 };
 
-const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, onNext }) => {
+const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
   const { user } = useAuth();
   const { getAudioVolume } = useVolume();
   const mediaRef = (node: HTMLMediaElement | null) => {
     if (node) node.volume = getAudioVolume();
   }
-
-  useEffect(() => {
-    setIsShowAnswer(false);
-  }, [setIsShowAnswer]);
+  const [currPageIdx, setCurrPageIdx] = useState(0);
   
   const handleNext = () => {
-    if (!isShowAnswer) setIsShowAnswer(true);
+    const pages = clueData.pages;
+    if (!Array.isArray(pages) || !pages || pages.length === 0) onNext();
+    else if (currPageIdx < (pages.length - 1)) setCurrPageIdx((prev) => prev + 1);
     else onNext();
   }
 
   const handlePrevious = () => {
-    if (isShowAnswer) setIsShowAnswer(false);
+    if (currPageIdx > 0) setCurrPageIdx((prev) => prev - 1);
   }
 
-  const renderClue = (items: PageData[], fallbackText: string) => {
+  const renderClue = (pages: PageData[][], fallbackText: string) => {
+    if (!Array.isArray(pages) || !pages || pages.length === 0) return <span>{fallbackText}</span>;
+    const items = pages[currPageIdx];
     if (!Array.isArray(items) || !items || items.length === 0) return <span>{fallbackText}</span>;
     // const assetPath = "http://localhost:8000/assets";
     const basePath = `${import.meta.env.VITE_CLOUDINARY_BASE_URL}`;
@@ -72,7 +71,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
       <button
         className="nav-btn left"
         onClick={handlePrevious}
-        disabled={!isShowAnswer}
+        disabled={currPageIdx === 0}
         aria-label="Previous page"
       >
         &#10094;
@@ -80,11 +79,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, isShowAnswer, setIsShowAnswer, on
 
       {/* Clue Content */}
       <div className='text'>
-        {!isShowAnswer ? (
-          renderClue(clueData.question, "No Questions Found")
-        ) : (
-          renderClue(clueData.answer, "No Answers Found")
-        )}
+        {renderClue(clueData.pages, "No Content Found")}
       </div>
 
       {/* Right Arrow / Next Page */}

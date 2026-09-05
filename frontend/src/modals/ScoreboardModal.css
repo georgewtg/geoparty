@@ -10,15 +10,29 @@
   gap: 8px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  padding: 12px 16px;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.75);
 }
 
 .scoreboard-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  color: #ffffff;
+
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  
+  cursor: pointer;
+}
+
+.scoreboard-header:hover {
+  background-color: #222021;
 }
 
 .collapse-btn {

@@ -41,6 +41,7 @@ const Menu: React.FC = () => {
   return (
     <>
       <div className='board-list'>
+       <button onClick={() => setIsModalOpen(true)}>+ Create Board</button>
         {boards.map((board) => {
           return (
             <div key={board.id} className='board-card' onClick={() => handleClick(board.id)}>
@@ -48,7 +49,6 @@ const Menu: React.FC = () => {
             </div>
           )
         })}
-       <button onClick={() => setIsModalOpen(true)}>+ Create Board</button>
        <CreateFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

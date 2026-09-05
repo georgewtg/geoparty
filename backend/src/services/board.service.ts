@@ -10,22 +10,24 @@ export const extractPublicIds = (boardData: BoardData): string[] => {
 
   const publicIds = new Set<string>();
 
-  const processPageData = (pageList?: PageData[]) => {
-    if (!Array.isArray(pageList)) return;
+  const processPageData = (pages?: PageData[][]) => {
+    if (!Array.isArray(pages)) return;
 
-    for (const page of pageList) {
-      if (page && MEDIA_TYPES.has(page.type) && page.value) {
-        // Use directly if page.value is public_id, or extract if page.value is a URL
-        const publicId = page.value;
-        if (publicId) publicIds.add(publicId);
+    for (const page of pages) {
+      if (!Array.isArray(page)) continue;
+
+      for (const item of page) {
+        if (item && MEDIA_TYPES.has(item.type) && item.value) {
+          const publicId = item.value;
+          if (publicId) publicIds.add(publicId);
+        }
       }
     }
   };
 
   const processClue = (clue?: ClueData) => {
     if (!clue) return;
-    processPageData(clue.question);
-    processPageData(clue.answer);
+    processPageData(clue.pages);
   };
 
   // process regular categories
@@ -43,7 +45,12 @@ export const extractPublicIds = (boardData: BoardData): string[] => {
 export const getAllTitleData = async () => {
   try {
     const result = await query(
-      `SELECT id, name FROM boards`
+      `SELECT 
+        b.id AS id, 
+        b.name AS name
+      FROM boards b
+      JOIN user_boards ub ON b.id = ub.board_id
+      ORDER BY b.created_at DESC`
     );
     
     if (result.rows.length === 0) return [];
@@ -72,6 +79,7 @@ export const getBoardData = async (boardId: string) => {
 };
 
 export const addBoardData = async (
+  userId: string,
   name: string,
   title: string,
   num_of_categories: number,
@@ -81,7 +89,7 @@ export const addBoardData = async (
   const clues: ClueData[] = [];
 
   for (let i = 1; i <= num_of_questions; i++) {
-    const clue: ClueData = { score: `${200 * i}`, question: [], answer: [] };
+    const clue: ClueData = { score: `${200 * i}`, pages: [] };
     clues[i-1] = clue;
   }
 
@@ -94,13 +102,19 @@ export const addBoardData = async (
 
   try {
     const result = await query(
-      `INSERT INTO boards (name, board_data)
-      VALUES ($1, $2) RETURNING id`,
-      [name, json_data]
+      `WITH new_board AS (
+        INSERT INTO boards (name, board_data)
+        VALUES ($1, $2)
+        RETURNING id
+      )
+      INSERT INTO user_boards (user_id, board_id)
+      SELECT $3, id FROM new_board
+      RETURNING board_id`,
+      [name, json_data, userId]
     );
 
     if (result.rows.length === 0) return null;
-    return result.rows[0].id;
+    return result.rows[0].board_id;
     
   } catch (error) {
     console.error("Error inserting board data:", error);
@@ -113,7 +127,10 @@ export const editBoardData = async (boardId: string, updates : { key: string, va
 
   try {
     // fetch old board json state
-    const currentBoardRes = await query(`SELECT board_data FROM boards WHERE id = $1`, [boardId]);
+    const currentBoardRes = await query(
+      `SELECT board_data FROM boards WHERE id = $1`,
+      [boardId]
+    );
     if (currentBoardRes.rows.length === 0) return null;
 
     const oldBoardData = currentBoardRes.rows[0].board_data;

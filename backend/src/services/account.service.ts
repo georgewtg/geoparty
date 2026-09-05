@@ -29,6 +29,23 @@ export const fetchAccountEmailUsername = async (email: string, username: string)
   }
 };
 
+export const fetchAccount = async (userId: string) => {
+  try {
+    const result = await query(
+      `SELECT id, email, username from users
+      WHERE id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
+
+  } catch (error) {
+    console.error("Error fetching credentials:", error);
+    throw error;
+  }
+};
+
 export const registerAccount = async (
   email: string,
   username: string,
@@ -44,7 +61,7 @@ export const registerAccount = async (
     );
 
     if (result.rows.length === 0) return null;
-    return result.rows[0].id;
+    return result.rows[0];
     
   } catch (error) {
     console.error("Error inserting user data:", error);

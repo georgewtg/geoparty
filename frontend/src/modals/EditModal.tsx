@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { updateBoard } from "../api/board.api";
 import { uploadFile } from "../api/upload.api";
 import {
@@ -18,23 +18,24 @@ type EditModalProps = {
   page: BoardPage;
   boardId: string;
   boardData: BoardData;
-  setBoard: (board: BoardItem) => void;
-  isShowAnswer: boolean;
+  setBoard: Dispatch<SetStateAction<BoardItem | null>>;
   selectedClueInfo: { catIdx: number, clueIdx: number }
-  setClueData: ( clueData: ClueData ) => void;
+  setClueData: Dispatch<SetStateAction<ClueData>>;
 };
 
 
-const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoard, isShowAnswer, selectedClueInfo, setClueData }) => {
+const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoard, selectedClueInfo, setClueData }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadingItemKey, setUploadingItemKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tempBoardData, setTempBoardData] = useState<BoardData>(boardData);
   const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
-  const section = isShowAnswer ? 'answer' : 'question';
   const {catIdx, clueIdx} = selectedClueInfo;
   const { user } = useAuth();
+
+  const MAX_FILE_SIZE_MB = 100;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -53,8 +54,8 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
     }));
   };
 
-  const getDiffUpdates = (): { key: string; value: string | PageData[] }[] => {
-    const updates: { key: string; value: string | PageData[] }[] = [];
+  const getDiffUpdates = (): { key: string; value: string | PageData[][] }[] => {
+    const updates: { key: string; value: string | PageData[][] }[] = [];
 
     // title diff
     if (tempBoardData.title !== boardData.title) {
@@ -73,39 +74,31 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
       // Check clues changes inside category
       cat.clues.forEach((clue, clueIdx) => {
         const origClue = origCat.clues[clueIdx];
-        if (origClue && clue.score !== origClue.score) {
+        if (!origClue) return;
+        
+        if (clue.score !== origClue.score) {
           updates.push({
             key: `categories,${catIdx},clues,${clueIdx},score`,
             value: clue.score,
           });
         }
 
-        // compare question items
-        const origQuestion = origClue.question;
-        if (clue.question && JSON.stringify(clue.question) !== JSON.stringify(origQuestion)) {
-          updates.push({ key: `categories,${catIdx},clues,${clueIdx},question`, value: clue.question });
-        }
-
-        // compare answer items
-        const origAnswer = origClue.answer;
-        if (clue.answer && JSON.stringify(clue.answer) !== JSON.stringify(origAnswer)) {
-          updates.push({ key: `categories,${catIdx},clues,${clueIdx},answer`, value: clue.answer });
+        // compare clues
+        if (clue.pages && JSON.stringify(clue.pages) !== JSON.stringify(origClue.pages)) {
+          updates.push({
+            key: `categories,${catIdx},clues,${clueIdx},pages`,
+            value: clue.pages,
+          });
         }
       });
     });
 
     // final jeopardy diff
-    const origFinalQuestion = boardData.final_jeopardy.question;
-    const origFinalAnswer = boardData.final_jeopardy.answer;
-    const tempFinalQuestion = tempBoardData.final_jeopardy.question;
-    const tempFinalAnswer = tempBoardData.final_jeopardy.answer;
-    if (tempFinalQuestion && JSON.stringify(tempFinalQuestion) !== JSON.stringify(origFinalQuestion)) {
-      updates.push({ key: `final_jeopardy,question`, value: tempFinalQuestion });
+    const origFinalPages = boardData.final_jeopardy?.pages;
+    const tempFinalPages = tempBoardData.final_jeopardy?.pages;
+    if (tempFinalPages && JSON.stringify(tempFinalPages) !== JSON.stringify(origFinalPages)) {
+      updates.push({ key: `final_jeopardy,pages`, value: tempFinalPages });
     }
-    if (tempFinalAnswer && JSON.stringify(tempFinalAnswer) !== JSON.stringify(origFinalAnswer)) {
-      updates.push({ key: `final_jeopardy,answer`, value: tempFinalAnswer });
-    }
-
 
     return updates;
   };
@@ -137,119 +130,159 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
   const handlePageDataChange = (
     catIdx: number,
     clueIdx: number,
-    section: 'question' | 'answer',
+    pageIdx: number,
     itemIdx: number,
     field: 'type' | 'value',
     value: string
   ) => {
-    if (catIdx === -1 && clueIdx === -1) {
-      setTempBoardData((prev) => {
-        const targetClue = { ...prev.final_jeopardy };
-        const targetList = [...(targetClue[section] || [])];
+    setTempBoardData((prev) => {
+      const isFinal = catIdx === -1 && clueIdx === -1;
+      const targetClue = isFinal
+      ? { ...prev.final_jeopardy }
+      : { ...prev.categories[catIdx].clues[clueIdx] };
 
-        targetList[itemIdx] = {
-          ...targetList[itemIdx],
-          [field]: value as DataType,
-        };
-
-        targetClue[section] = targetList;
-
-        return { ...prev, final_jeopardy: targetClue };
+      const updatedPages = (targetClue.pages || []).map((page, pIdx) => {
+        if (pIdx !== pageIdx) return page;
+        return page.map((item, iIdx) => {
+          if (iIdx !== itemIdx) return item;
+          return { ...item, [field]: value as DataType };
+        });
       });
-    } else {
-      setTempBoardData((prev) => {
-        const updatedCategories = [...(prev.categories || [])];
-        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-        const targetClue = { ...updatedClues[clueIdx] };
-        const targetList = [...(targetClue[section] || [])];
 
-        targetList[itemIdx] = {
-          ...targetList[itemIdx],
-          [field]: value as DataType,
-        };
+      targetClue.pages = updatedPages;
 
-        targetClue[section] = targetList;
-        updatedClues[clueIdx] = targetClue;
-        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+      if (isFinal) return { ...prev, final_jeopardy: targetClue };
 
-        return { ...prev, categories: updatedCategories };
-      });
-    }
-  }
+      const updatedCategories = [...prev.categories || []];
+      const updatedClues = [...updatedCategories[catIdx].clues || []];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  };
 
   const addPageDataItem = (
     catIdx: number,
     clueIdx: number,
-    section: 'question' | 'answer'
+    pageIdx: number
   ) => {
-    if (catIdx === -1 && clueIdx === -1) {
-      setTempBoardData((prev) => {
-        const targetClue = { ...prev.final_jeopardy };
-        const newItem: PageData = { type: 'TEXT', value: '' };
+    setTempBoardData((prev) => {
+      const isFinal = catIdx === -1 && clueIdx === -1;
+      const targetClue = isFinal
+        ? { ...prev.final_jeopardy }
+        : { ...prev.categories[catIdx].clues[clueIdx] };
 
-        targetClue[section] = [...(targetClue[section] || []), newItem];
+      const newItem: PageData = { type: 'TEXT', value: '' };
 
-        return { ...prev, final_jeopardy: targetClue };
+      const updatedPages = (targetClue.pages || []).map((page, pIdx) => {
+        if (pIdx !== pageIdx) return page;
+        return [...page, newItem];
       });
-    } else {
-      setTempBoardData((prev) => {
-        const updatedCategories = [...(prev.categories || [])];
-        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-        const targetClue = { ...updatedClues[clueIdx] };
-        const newItem: PageData = { type: 'TEXT', value: '' };
 
-        targetClue[section] = [...(targetClue[section] || []), newItem];
-        updatedClues[clueIdx] = targetClue;
-        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+      targetClue.pages = updatedPages;
 
-        return { ...prev, categories: updatedCategories };
-      });
-    }
-  }
+      if (isFinal) return { ...prev, final_jeopardy: targetClue };
+
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  };
 
   const removePageDataItem = (
     catIdx: number,
     clueIdx: number,
-    section: 'question' | 'answer',
+    pageIdx: number,
     itemIdx: number
   ) => {
-    if (catIdx === -1 && clueIdx === -1) {
-      setTempBoardData((prev) => {
-        const targetClue = { ...prev.final_jeopardy };
+    setTempBoardData((prev) => {
+      const isFinal = catIdx === -1 && clueIdx === -1;
+      const targetClue = isFinal
+        ? { ...prev.final_jeopardy }
+        : { ...prev.categories[catIdx].clues[clueIdx] };
 
-        targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
-
-        return { ...prev, final_jeopardy: targetClue };
+      const updatedPages = (targetClue.pages || []).map((page, pIdx) => {
+        if (pIdx !== pageIdx) return page;
+        return page.filter((_, iIdx) => iIdx !== itemIdx);
       });
-    } else {
-      setTempBoardData((prev) => {
-        const updatedCategories = [...(prev.categories || [])];
-        const updatedClues = [...(updatedCategories[catIdx].clues || [])];
-        const targetClue = { ...updatedClues[clueIdx] };
 
-        targetClue[section] = (targetClue[section] || []).filter((_, idx) => idx !== itemIdx);
-        updatedClues[clueIdx] = targetClue;
-        updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+      targetClue.pages = updatedPages;
 
-        return { ...prev, categories: updatedCategories };
-      });
-    }
-  }
+      if (isFinal) return { ...prev, final_jeopardy: targetClue };
 
-  const handleFileUpload = async (file: File) => {
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  };
+
+  const handleAddPage = () => {
+    setTempBoardData((prev) => {
+      const isFinal = catIdx === -1 && clueIdx === -1;
+      const targetClue = isFinal
+        ? { ...prev.final_jeopardy }
+        : { ...prev.categories[catIdx].clues[clueIdx] };
+
+      targetClue.pages = [...targetClue.pages, []];
+
+      if (isFinal) return { ...prev, final_jeopardy: targetClue };
+
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  };
+
+  const handleRemovePage = (
+    catIdx: number,
+    clueIdx: number,
+    pageIdx: number
+  ) => {
+    setTempBoardData((prev) => {
+      const isFinal = catIdx === -1 && clueIdx === -1;
+      const targetClue = isFinal
+        ? { ...prev.final_jeopardy }
+        : { ...prev.categories[catIdx].clues[clueIdx] };
+
+      const updatedPages = targetClue.pages.filter((_, iIdx) => iIdx !== pageIdx);
+      targetClue.pages = updatedPages;
+
+      if (isFinal) return { ...prev, final_jeopardy: targetClue };
+
+      const updatedCategories = [...(prev.categories || [])];
+      const updatedClues = [...(updatedCategories[catIdx].clues || [])];
+      updatedClues[clueIdx] = targetClue;
+      updatedCategories[catIdx] = { ...updatedCategories[catIdx], clues: updatedClues };
+
+      return { ...prev, categories: updatedCategories };
+    });
+  };
+
+  const handleFileUpload = async (file: File, uploadKey: string) => {
     try {
-      setUploading(true);
+      setUploadingItemKey(uploadKey);
       if (!user) throw new Error('User must be logged in to upload files');
+      if (file.size > MAX_FILE_SIZE_BYTES) throw new Error(`File size exceeds ${MAX_FILE_SIZE_MB} MB limit`);
 
-      const data = uploadFile(file, user.id);
+      const data = await uploadFile(file, user.id);
       return data;
     } catch (error) {
       setError('Failed to upload file');
       console.error(error);
     } finally {
-      setUploading(false);
+      setUploadingItemKey(null);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -283,77 +316,106 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
   const renderPageDataSection = (
     catIdx: number,
     clueIdx: number,
-    section: 'question' | 'answer',
-    items: PageData[] = []
+    pages: PageData[][]
   ) => {
-    if (!Array.isArray(items)) items = [];
+    if (!Array.isArray(pages)) pages = [];
 
     return (
-      <div className={`clue-section`}>
-        <div className="section-header row">
-          <button
-            type="button"
-            className="button add"
-            onClick={() => addPageDataItem(catIdx, clueIdx, section)}
-          >
-            + Add Item
-          </button>
-        </div>
+      <div>
+        {pages.map((pageItems, pageIdx) => (
+          <div key={pageIdx} className="clue-section">
+            <div className="section-header row">
+              <span className="page-number">Page {pageIdx + 1}</span>
+              <div className="header-button">
+                <button
+                  type="button"
+                  className="button add"
+                  onClick={() => addPageDataItem(catIdx, clueIdx, pageIdx)}
+                >
+                  + Add Item
+                </button>
+                <button
+                  type="button"
+                  className="button remove"
+                  onClick={() => handleRemovePage(catIdx, clueIdx, pageIdx)}
+                >
+                  &times; Remove Page
+                </button>
+              </div>
+            </div>
 
-        {items.map((item, itemIdx) => (
-          <div key={itemIdx} className="page-data-row row">
-            <select
-              value={item.type}
-              onChange={(e) =>
-                handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'type', e.target.value)
-              }
-            >
-              {DATA_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="text"
-              placeholder="text / filename"
-              value={item.value}
-              onChange={(e) =>
-                handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'value', e.target.value)
-              }
-              required
-            />
-
-            {/* Hidden File Input triggered by the Upload Button */}
-            <label className="button upload">
-              {uploading ? 'Uploading...' : '📤'}
-              <input
-                type="file"
-                id={`file-upload-${catIdx}-${clueIdx}-${section}-${itemIdx}`}
-                style={{ display: 'none' }}
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const data = await handleFileUpload(file);
-                    const fileName = data?.public_id.split('/').pop() || '';
-                    handlePageDataChange(catIdx, clueIdx, section, itemIdx, 'value', fileName);
+            {(pageItems || []).map((item, itemIdx) => (
+              <div key={itemIdx} className="page-data-row row">
+                <select
+                  value={item.type}
+                  onChange={(e) =>
+                    handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'type', e.target.value)
                   }
-                }}
-              />
-            </label>
+                >
+                  {DATA_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
 
-            <button
-              type="button"
-              className="button delete"
-              onClick={() => removePageDataItem(catIdx, clueIdx, section, itemIdx)}
-            >
-              🗑️
-            </button>
+                <input
+                  type="text"
+                  placeholder="text / filename"
+                  value={item.value}
+                  onChange={(e) =>
+                    handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', e.target.value)
+                  }
+                  required
+                />
+
+                {/* Hidden File Input triggered by the Upload Button */}
+                <label className="button upload">
+                  {(uploadingItemKey === `${pageIdx}-${itemIdx}`) ? (
+                    <svg 
+                      className="spinner" 
+                      viewBox="0 0 24 24" 
+                      width="16" 
+                      height="16" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                  ) : '📤'}
+                  <input
+                    type="file"
+                    id={`file-upload-${catIdx}-${clueIdx}-${pageIdx}-${itemIdx}`}
+                    style={{ display: 'none' }}
+                    disabled={uploadingItemKey === `${pageIdx}-${itemIdx}`}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const data = await handleFileUpload(file, `${pageIdx}-${itemIdx}`);
+                        const fileName = data?.public_id.split('/').pop() || '';
+                        handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', fileName);
+                      }
+                    }}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="button delete"
+                  onClick={() => removePageDataItem(catIdx, clueIdx, pageIdx, itemIdx)}
+                >
+                  🗑️
+                </button>
+              </div>
+            ))}
           </div>
         ))}
+        
       </div>
+      
     )
   };
 
@@ -363,6 +425,10 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
         <div className="modal-content">
           <div className="modal-header">
             <h2>{page === 'TITLE' ? 'Edit Title' : ( page === 'BOARD' ? 'Edit Categories & Score' : 'Edit Page' )}</h2>
+            {page === 'CLUE' && (
+              <button type="button" className="button add" onClick={handleAddPage}>
+                + Add Page
+              </button>)}
             <button className="button close" onClick={() => setIsOpen(false)}>&times;</button>
           </div>
 
@@ -427,13 +493,16 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
             {page === 'CLUE' && (
               <div className="clues-container">
                 <div key={clueIdx} className="clue-edit-block">
-                  {renderPageDataSection(catIdx, clueIdx, section, (catIdx === -1 && clueIdx === -1) ? tempBoardData.final_jeopardy[section] : tempBoardData.categories[catIdx].clues[clueIdx][section])}
+                  {renderPageDataSection(catIdx, clueIdx, (catIdx === -1 && clueIdx === -1) ? tempBoardData.final_jeopardy.pages : tempBoardData.categories[catIdx].clues[clueIdx].pages)}
                 </div>
               </div>
             )}
 
             <div className="field row">
-              <button className="cancel-button" type="button" onClick={() => setIsOpen(false)} disabled={loading}>
+              <button className="cancel-button" type="button" disabled={loading} onClick={() => {
+                setIsOpen(false);
+                setTempBoardData(boardData);
+              }}>
                 Cancel
               </button>
               <button className="submit-button" type="submit" disabled={loading}>

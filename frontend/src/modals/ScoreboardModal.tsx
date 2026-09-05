@@ -78,17 +78,17 @@ const ScoreBoard: React.FC = () => {
 
   return (
     <div className="scoreboard-container">
-      <div className="scoreboard-header">
-        <button 
-          className="collapse-btn" 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          aria-label={isCollapsed ? "Expand Scoreboard" : "Collapse Scoreboard"}
-        >
-          {isCollapsed ? "▲" : "▼"}
-        </button>
-        <div className="player-count-controls">
-          <span>{playerCount}</span>
+      <div
+        className="scoreboard-header"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        role="button"
+        tabIndex={0}
+      >
+        <div />
+        <span>{isCollapsed ? "▲" : "▼"}</span>
+        <div className="player-count-controls" onClick={(e) => e.stopPropagation()}>
           <button onClick={() => updatePlayerCount(playerCount - 1)}>-</button>
+          <span>{playerCount}</span>
           <button onClick={() => updatePlayerCount(playerCount + 1)}>+</button>
         </div>
       </div>
