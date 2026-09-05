@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import PublicOnlyRoute from './components/PublicOnlyRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 import Menu from './components/Menu';
@@ -13,8 +13,6 @@ import './App.css';
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path='/' element={<Navigate to="/menu" replace />} />
-
       {/* accessible only if not logged in */}
       <Route element={<PublicOnlyRoute />}>
         <Route path='/login' element={<Login />} />
