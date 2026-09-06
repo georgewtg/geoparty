@@ -14,7 +14,7 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path='/' element={<Navigate to="/login" replace />} />
-
+      
       {/* accessible only if not logged in */}
       <Route element={<PublicOnlyRoute />}>
         <Route path='/login' element={<Login />} />

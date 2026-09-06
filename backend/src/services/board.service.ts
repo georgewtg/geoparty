@@ -97,7 +97,7 @@ export const addBoardData = async (
     categories[i-1] = { id: `cat-${i}`, name: `Category ${i}`, clues: clues }
   }
 
-  const final_jeopardy: PageData[] = [];
+  const final_jeopardy: ClueData = { score: '', pages: [] };
   const json_data = JSON.stringify({ title, categories, final_jeopardy });
 
   try {
@@ -138,6 +138,15 @@ export const editBoardData = async (boardId: string, updates : { key: string, va
 
     // update json entries
     const queryParams: any[] = [boardId];
+    const initialBoardData = `CASE
+      WHEN jsonb_typeof(board_data->'final_jeopardy') = 'array'
+      THEN jsonb_set(board_data, ARRAY['final_jeopardy'], jsonb_build_object(
+        'score', '',
+        'pages', board_data->'final_jeopardy'
+      ))
+      ELSE board_data
+    END`;
+
     const jsonbChain = updates.reduce((acc, curr, index) => {
       const pathParamIdx = index * 2 + 2;
       const valueParamIdx = index * 2 + 3;
@@ -148,7 +157,7 @@ export const editBoardData = async (boardId: string, updates : { key: string, va
       queryParams.push(JSON.stringify(curr.value));
 
       return `jsonb_set(${acc}, $${pathParamIdx}::text[], $${valueParamIdx}::jsonb)`;
-    }, 'board_data');
+    }, initialBoardData);
 
     const result = await query(
       `UPDATE boards SET board_data = ${jsonbChain}

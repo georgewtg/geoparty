@@ -230,7 +230,7 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
         ? { ...prev.final_jeopardy }
         : { ...prev.categories[catIdx].clues[clueIdx] };
 
-      targetClue.pages = [...targetClue.pages, []];
+      targetClue.pages = [...(targetClue.pages || []), []];
 
       if (isFinal) return { ...prev, final_jeopardy: targetClue };
 
