@@ -69,6 +69,9 @@
   width: 90%;
   max-width: 500px;
   max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -85,6 +88,17 @@
 
 .modal-header .button {
   margin-left: 8px;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(90dvh - 96px);
+}
+
+.modal-content form > .field.row {
+  flex: 0 0 auto;
 }
 
 .close-button {
@@ -335,4 +349,10 @@ input {
   to {
     transform: rotate(360deg);
   }
+}
+
+.clues-container {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1 1 auto;
 }
