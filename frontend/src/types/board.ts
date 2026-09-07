@@ -36,7 +36,6 @@ export type BoardItem = {
 };
 
 export type CreateBoardPayload = {
-  userId: string;
   name: string;
   title: string;
   num_of_categories: number;

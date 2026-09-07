@@ -1,10 +1,17 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import * as boardService from '../services/board.service'
 
 
 export const getAllTitles = async (req: Request, res: Response) => {
   try {
-    const payload = await boardService.getAllTitleData();
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    const userId = decoded.userId;
+    if (!userId) return res.status(400).json({ success: false, message: 'User ID is required' });
+
+    const payload = await boardService.getAllTitleData(userId);
     if (!payload) return res.status(404).json({ success: false, message: 'No board found' });
 
     res.status(200).json({ success: true, payload });
@@ -31,8 +38,11 @@ export const getBoard = async (req: Request, res: Response) => {
 
 export const addBoard = async (req: Request, res: Response) => {
   try {
-    const { userId, name, title, num_of_categories, num_of_questions } = req.body;
-
+    const { name, title, num_of_categories, num_of_questions } = req.body;
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    
+    const userId = decoded.userId;
     if (!userId) return res.status(400).json({ success: false, message: 'User ID is required' });
 
     const payload = await boardService.addBoardData(userId, name, title, num_of_categories, num_of_questions);

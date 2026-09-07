@@ -42,15 +42,16 @@ export const extractPublicIds = (boardData: BoardData): string[] => {
 };
 
 
-export const getAllTitleData = async () => {
+export const getAllTitleData = async (userId: string) => {
   try {
     const result = await query(
       `SELECT 
         b.id AS id, 
         b.name AS name
       FROM boards b
-      JOIN user_boards ub ON b.id = ub.board_id
-      ORDER BY b.created_at DESC`
+      JOIN user_boards ub ON b.id = ub.board_id AND ub.user_id = $1
+      ORDER BY b.created_at DESC`,
+      [userId]
     );
     
     if (result.rows.length === 0) return [];

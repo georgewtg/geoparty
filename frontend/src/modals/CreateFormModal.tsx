@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBoard } from "../api/board.api";
 import type { CreateBoardPayload } from "../types/board";
-import { useAuth } from "../context/AuthContext";
 import './CreateFormModal.css';
 
 type CreateFormModalProps = {
@@ -12,9 +11,7 @@ type CreateFormModalProps = {
 
 const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [formData, setFormData] = useState<CreateBoardPayload>({
-    userId: user ? user.id : '',
     name: "GeoParty Template",
     title: "GeoParty",
     num_of_categories: 6,
