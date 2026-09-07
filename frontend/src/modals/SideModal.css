@@ -36,13 +36,13 @@
 
 /* Hover / Focus Expansion */
 .side-tab:hover,
-.side-tab:focus {
+.side-tab:active {
   width: 100px; /* Expands out to reveal text */
   background: #1e293b;
 }
 
 .side-tab:hover .tab-label,
-.side-tab:focus .tab-label {
+.side-tab:active .tab-label {
   opacity: 1;
 }
 
@@ -80,6 +80,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #312e81;
+  margin-left: 20px;
 }
 
 .modal-header h2 {
@@ -99,18 +100,6 @@
 
 .modal-content form > .field.row {
   flex: 0 0 auto;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.close-button:hover {
-  color: #fff;
 }
 
 .error {
@@ -139,77 +128,40 @@
 }
 
 
-/* board page */
-.categories-list {
+/* board and clue page */
+.edit-list, .settings-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
 
-  max-height: 60vh;
+  max-height: 52.1vh;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   margin-bottom: 20px;
+  margin-left: 15px;
 }
 
-.category-item {
+.edit-item {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 8px 12px;
 }
 
-.category-header {
+.edit-header {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-.category-header input {
+.edit-header.page {
+  justify-content: space-between;
+}
+
+.edit-header input {
   width: 100%;
-}
-
-.clues-dropdown {
-  margin-top: 8px;
-  padding-left: 12px;
-  border-left: 2px solid #3b82f6;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.clue-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.clue-row label {
-  margin-right: 20px;
-}
-
-
-/* clue page */
-
-.clue-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-  padding: 10px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .page-number {
@@ -218,18 +170,49 @@
   color: white;
 }
 
-.page-data-row {
+.header-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
 }
 
-.page-data-row select {
-  height: 35px;
+.edit-dropdown {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid #3b82f6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-dropdown.page {
+  flex-direction: row;
+}
+
+.edit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit-row label {
+  margin-right: 20px;
+}
+
+.edit-row.page {
+  justify-content: flex-start;
+  gap: 5px
+}
+
+.edit-row.page label {
+  margin-right: 0;
+}
+
+.edit-row.page select {
+  height: 30px;
   border-radius: 4px;
   border: 1px solid #ccc;
-  font-size: 14px;
+  font-size: 12px;
   font-family: inherit;
   background-color: #333333;
   color: #ffffff;
@@ -239,16 +222,20 @@
   appearance: none;
 
   /* custom svg arrow */
-  padding: 0 32px 0 10px;
+  padding: 0 18px 0 8px;
   background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 5px center;
 }
 
-.page-data-row input {
-  height: 35px;
+.edit-row.page input {
+  height: 30px;
+  font-size: 15px;
+  padding: 5px;
 }
 
+
+/* buttons */
 .button {
   display: inline-flex;
   align-items: center;
@@ -264,10 +251,22 @@
   flex-shrink: 0;
 }
 
+.button.close {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.button.close:hover {
+  color: #fff;
+}
+
 .button.upload,
 .button.delete {
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
 }
 
 .button:hover {
@@ -277,6 +276,8 @@
 .button.add {
   background-color: #0070f3;
   color: #ffffff;
+  margin-top: 5px;
+  align-self: flex-end;
 }
 
 .button.remove {
@@ -304,20 +305,32 @@ button.button.upload:disabled {
 
 
 /* setttings */
-.volume-control {
+.settings-item {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: white;
+  width: 100%;
+}
+
+.settings-item.volume {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-direction: column;
 }
 
-.volume-control label
-.volume-control span {
-  color: white;
+.settings-item .volume-label {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
 }
 
-.volume-slider {
+.settings-item .volume-slider {
   flex: 1;
   padding: 0;
+  width: 100%;
   cursor: pointer;
 }
 
@@ -334,6 +347,7 @@ input {
 .button.logout {
   margin-top: 20px;
   background-color: #dc3545;
+  align-self: center;
 }
 
 .spinner {
@@ -351,8 +365,6 @@ input {
   }
 }
 
-.clues-container {
-  min-height: 0;
-  overflow-y: auto;
-  flex: 1 1 auto;
+.modal-content .submit-button {
+  margin-right: 10px;
 }

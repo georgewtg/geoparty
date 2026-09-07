@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBoard } from "../api/board.api";
 import type { CreateBoardPayload } from "../types/board";
+import { useShortcut } from "../hooks/useShortcut";
 import './CreateFormModal.css';
 
 type CreateFormModalProps = {
@@ -19,14 +20,11 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const mouseDownTarget = useRef<EventTarget | null>(null);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  useShortcut({
+    Escape: onClose
+  }, isOpen);
 
   if (!isOpen) return null; // Close Floating Form Modal
 
@@ -53,7 +51,11 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
   };
 
   return (
-    <div className="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className="overlay"
+      onMouseDown={(e) => mouseDownTarget.current = e.target}
+      onClick={(e) => e.target === e.currentTarget && mouseDownTarget.current === e.currentTarget && onClose()}
+    >
       <div className="modal">
         <div className="modal-header">
           <h2>Create New Board</h2>

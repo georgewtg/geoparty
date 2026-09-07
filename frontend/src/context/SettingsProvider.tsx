@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { VolumeContext } from "./VolumeContext";
+import { SettingsContext } from "./SettingsContext";
 
 const VolumeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [volume, setVolumeState] = useState<number>(() => {
     const saved = localStorage.getItem("geoparty_volume");
     return saved !== null ? parseFloat(saved) : 100;
+  });
+
+  const [hasScoreboard, setHasScoreboardState] = useState<boolean>(() => {
+    const saved = localStorage.getItem("geoparty_has_scoreboard");
+    return saved !== null ? JSON.parse(saved) : false;
   });
 
   const setVolume = (val: number) => {
@@ -13,13 +18,18 @@ const VolumeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
     localStorage.setItem("geoparty_volume", clamped.toString());
   };
 
+  const setHasScoreboard = (hasScoreboard: boolean) => {
+    setHasScoreboardState(hasScoreboard);
+    localStorage.setItem("geoparty_has_scoreboard", hasScoreboard.toString());
+  };
+
   // Logarithmic conversion (volume^2) for media player
   const getAudioVolume = () => Math.pow(volume / 100, 2);
 
   return (
-    <VolumeContext.Provider value={{ volume, setVolume, getAudioVolume }}>
+    <SettingsContext.Provider value={{ volume, setVolume, getAudioVolume, hasScoreboard, setHasScoreboard }}>
       {children}
-    </VolumeContext.Provider>
+    </SettingsContext.Provider>
   );
 };
 

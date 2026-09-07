@@ -1,15 +1,3 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100dvh;
-  overflow: hidden;
-}
-
 .grid-container {
   display: grid;
   width: 100%;
@@ -27,6 +15,7 @@ html, body, #root {
   grid-template-rows: repeat(1, 1fr);
   grid-template-columns: none;
   grid-auto-flow: column;
+  padding-bottom: 4px;
 }
 
 .grid-cell {

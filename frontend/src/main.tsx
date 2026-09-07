@@ -4,15 +4,15 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
 import AuthProvider from './context/AuthProvider.tsx';
-import VolumeProvider from './context/VolumeProvider.tsx';
+import SettingsProvider from './context/SettingsProvider.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <VolumeProvider>
+        <SettingsProvider>
           <App />
-        </VolumeProvider>
+        </SettingsProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

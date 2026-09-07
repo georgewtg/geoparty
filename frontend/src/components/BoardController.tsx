@@ -8,10 +8,12 @@ import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
 import EditModal from "../modals/EditModal";
 import ScoreBoard from "../modals/ScoreboardModal";
+import { useSettings } from "../context/SettingsContext";
 
 
 const BoardController: React.FC = () => {
   const { boardId } = useParams();
+  const { hasScoreboard } = useSettings();
   const [page, setPage] = useState<BoardPage>('TITLE');
   const [board, setBoard] = useState<BoardItem | null>(null);
   const [selectedClueInfo, setSelectedClueInfo] = useState({ catIdx: -1, clueIdx: -1 });
@@ -61,9 +63,7 @@ const BoardController: React.FC = () => {
       height: "100dvh",
       display: "flex",
       flexDirection: "column",
-      position: "relative",
-      overflow: "hidden",
-      paddingBottom: "50px"
+      overflow: "hidden"
     }}>
       {pageMap[page] ?? <div>Page not found</div>}
       <EditModal
@@ -74,7 +74,7 @@ const BoardController: React.FC = () => {
         selectedClueInfo={selectedClueInfo}
         setClueData={setClueData}
       />
-      <ScoreBoard />
+      { hasScoreboard && <ScoreBoard />}
     </div>
   );
 };

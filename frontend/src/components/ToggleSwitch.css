@@ -1,0 +1,67 @@
+/* Container wrapper */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The switch background track */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+/* The track styling (OFF state: Gray) */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #4a4a4a; /* Off gray */
+  transition: background-color 0.3s ease;
+  border-radius: 24px;
+}
+
+/* The sliding circle handle */
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: transform 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ON state background color (Yellow/Gold to match Jeopardy theme) */
+.switch input:checked + .slider {
+  background-color: #85B6FF;
+}
+
+/* ON state slider move (Slides right) */
+.switch input:checked + .slider::before {
+  transform: translateX(24px);
+}
+
+/* Optional Focus style for accessibility */
+.switch input:focus-visible + .slider {
+  outline: 2px solid #ffffff;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import React, { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { updateBoard } from "../api/board.api";
 import { uploadFile } from "../api/upload.api";
 import {
@@ -11,6 +11,7 @@ import {
   type PageData
 } from "../types/board";
 import { useAuth } from "../context/AuthContext";
+import { useShortcut } from "../hooks/useShortcut";
 import "./SideModal.css"
 
 
@@ -31,24 +32,29 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
   const [error, setError] = useState<string | null>(null);
   const [tempBoardData, setTempBoardData] = useState<BoardData>(boardData);
   const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
+  const [expandedPages, setExpandedPages] = useState<Record<number, boolean>>({});
+  const mouseDownTarget = useRef<EventTarget | null>(null);
   const {catIdx, clueIdx} = selectedClueInfo;
   const { user } = useAuth();
 
   const MAX_FILE_SIZE_MB = 100;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-    if (isOpen) window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  useShortcut({
+    Escape: () => setIsOpen(false)
+  }, isOpen);
 
 
-  // toggle category dropdown
+  // toggle dropdown
   const toggleCategory = (index: number) => {
     setExpandedCategories((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  const togglePage = (index: number) => {
+    setExpandedPages((prev) => ({
       ...prev,
       [index]: !prev[index],
     }));
@@ -272,12 +278,21 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
     try {
       setUploadingItemKey(uploadKey);
       if (!user) throw new Error('User must be logged in to upload files');
+
+      const isImage = file.type.startsWith('image/');
+      const isAudio = file.type.startsWith('audio/');
+      const isVideo = file.type.startsWith('video/');
+
+      if (!isImage && !isAudio && !isVideo) {
+        throw new Error('Please select a valid image, audio, or video file.');
+      }
       if (file.size > MAX_FILE_SIZE_BYTES) throw new Error(`File size exceeds ${MAX_FILE_SIZE_MB} MB limit`);
 
       const data = await uploadFile(file, user.id);
       return data;
     } catch (error) {
-      setError('Failed to upload file');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+      setError(errorMessage);
       console.error(error);
     } finally {
       setUploadingItemKey(null);
@@ -313,7 +328,7 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
     }
   };
 
-  const renderPageDataSection = (
+  const renderPageDataEdit = (
     catIdx: number,
     clueIdx: number,
     pages: PageData[][]
@@ -321,110 +336,194 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
     if (!Array.isArray(pages)) pages = [];
 
     return (
-      <div>
-        {pages.map((pageItems, pageIdx) => (
-          <div key={pageIdx} className="clue-section">
-            <div className="section-header row">
-              <span className="page-number">Page {pageIdx + 1}</span>
-              <div className="header-button">
-                <button
-                  type="button"
-                  className="button add"
-                  onClick={() => addPageDataItem(catIdx, clueIdx, pageIdx)}
-                >
-                  + Add Item
-                </button>
-                <button
-                  type="button"
-                  className="button remove"
-                  onClick={() => handleRemovePage(catIdx, clueIdx, pageIdx)}
-                >
-                  &times; Remove Page
-                </button>
-              </div>
+      pages.map((pageItems, pageIdx) => (
+        <div key={pageIdx} className="edit-item">
+          <div className="edit-header page">
+            <span className="page-number">Page {pageIdx + 1}</span>
+            <div className="header-button">
+              <button
+                type="button"
+                className="button remove"
+                onClick={() => handleRemovePage(catIdx, clueIdx, pageIdx)}
+              >
+                &times; Remove Page
+              </button>
+              <button 
+                type="button" 
+                className="button dropdown" 
+                onClick={() => togglePage(pageIdx)}
+              >
+                {expandedPages[pageIdx] ? '▲' : '▼'}
+              </button>
             </div>
-
-            {(pageItems || []).map((item, itemIdx) => (
-              <div key={itemIdx} className="page-data-row row">
-                <select
-                  value={item.type}
-                  onChange={(e) =>
-                    handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'type', e.target.value)
-                  }
-                >
-                  {DATA_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="text"
-                  placeholder="text / filename"
-                  value={item.value}
-                  onChange={(e) =>
-                    handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', e.target.value)
-                  }
-                  required
-                />
-
-                {/* Hidden File Input triggered by the Upload Button */}
-                <label className="button upload">
-                  {(uploadingItemKey === `${pageIdx}-${itemIdx}`) ? (
-                    <svg 
-                      className="spinner" 
-                      viewBox="0 0 24 24" 
-                      width="16" 
-                      height="16" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2.5" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                  ) : '📤'}
-                  <input
-                    type="file"
-                    id={`file-upload-${catIdx}-${clueIdx}-${pageIdx}-${itemIdx}`}
-                    style={{ display: 'none' }}
-                    disabled={uploadingItemKey === `${pageIdx}-${itemIdx}`}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const data = await handleFileUpload(file, `${pageIdx}-${itemIdx}`);
-                        const fileName = data?.public_id.split('/').pop() || '';
-                        handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', fileName);
-                      }
-                    }}
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  className="button delete"
-                  onClick={() => removePageDataItem(catIdx, clueIdx, pageIdx, itemIdx)}
-                >
-                  🗑️
-                </button>
-              </div>
-            ))}
           </div>
-        ))}
-        
-      </div>
-      
+
+          {expandedPages[pageIdx] && (
+            <>
+              <div className="edit-dropdown">
+                {(pageItems || []).map((item, itemIdx) => (
+                  <div key={itemIdx} className="edit-row page">
+                    <select
+                      value={item.type}
+                      onChange={(e) =>
+                        handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'type', e.target.value)
+                      }
+                    >
+                      {DATA_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="text"
+                      placeholder="text / filename"
+                      value={item.value}
+                      onChange={(e) =>
+                        handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', e.target.value)
+                      }
+                      required
+                    />
+
+                    {/* Hidden File Input triggered by the Upload Button */}
+                    <label className="button upload">
+                      {(uploadingItemKey === `${pageIdx}-${itemIdx}`) ? (
+                        <svg 
+                          className="spinner" 
+                          viewBox="0 0 24 24" 
+                          width="16" 
+                          height="16" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="2.5" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      ) : '📤'}
+                      <input
+                        type="file"
+                        id={`file-upload-${catIdx}-${clueIdx}-${pageIdx}-${itemIdx}`}
+                        style={{ display: 'none' }}
+                        accept="image/*,audio/*,video/*"
+                        disabled={uploadingItemKey === `${pageIdx}-${itemIdx}`}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const data = await handleFileUpload(file, `${pageIdx}-${itemIdx}`);
+                            if (data) {
+                              const fileName = data?.public_id.split('/').pop() || '';
+                              handlePageDataChange(catIdx, clueIdx, pageIdx, itemIdx, 'value', fileName);
+                            }
+                          }
+                          e.target.value='';
+                        }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      className="button delete"
+                      onClick={() => removePageDataItem(catIdx, clueIdx, pageIdx, itemIdx)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="button add"
+                onClick={() => addPageDataItem(catIdx, clueIdx, pageIdx)}
+              >
+                + Add Item
+              </button>
+            </>
+          )}
+        </div>
+      ))
     )
   };
 
+  const renderTitleEdit = () => {
+    return (
+      <div className="field row">
+        <label htmlFor="title">Title</label>
+        <input
+          id="title"
+          name="title"
+          type="text"
+          required
+          value={tempBoardData.title || ''}
+          onChange={(e) => handleTitleChange(e.target.value)}
+        />
+      </div>
+    )
+  };
+
+  const renderBoardEdit = () => {
+    return (
+      <div className="edit-list">
+        {tempBoardData.categories?.map((category, catIdx) => (
+          <div key={category.id || catIdx} className="edit-item">
+            <div className="edit-header">
+              <input
+                type="text"
+                value={category.name}
+                placeholder="Category Name"
+                onChange={(e) => handleCategoryNameChange(catIdx, e.target.value)}
+                required
+              />
+              <button 
+                type="button" 
+                className="button dropdown" 
+                onClick={() => toggleCategory(catIdx)}
+              >
+                {expandedCategories[catIdx] ? '▲' : '▼'}
+              </button>
+            </div>
+
+            {expandedCategories[catIdx] && (
+              <div className="edit-dropdown">
+                {category.clues?.map((clue, clueIdx) => (
+                  <div key={clueIdx} className="edit-row">
+                    <label>Value #{clueIdx + 1}:</label>
+                    <input
+                      type="text"
+                      value={clue.score}
+                      onChange={(e) => handleClueScoreChange(catIdx, clueIdx, e.target.value)}
+                      required
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  };
+
+  const renderClueEdit = () => {
+    return (
+      <div className="edit-list">
+        {renderPageDataEdit(catIdx, clueIdx, (catIdx === -1 && clueIdx === -1) ? tempBoardData.final_jeopardy.pages : tempBoardData.categories[catIdx].clues[clueIdx].pages)}
+      </div>
+    )
+  }
+
   const renderModal = () => {
     return (
-      <div id="edit-modal" className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}>
+      <div
+        id="edit-modal" className="modal-backdrop"
+        onMouseDown={(e) => mouseDownTarget.current = e.target}
+        onClick={(e) => e.target === e.currentTarget && mouseDownTarget.current === e.currentTarget && setIsOpen(false)}
+      >
         <div className="modal-content">
           <div className="modal-header">
-            <h2>{page === 'TITLE' ? 'Edit Title' : ( page === 'BOARD' ? 'Edit Categories & Score' : 'Edit Page' )}</h2>
+            <h2>{page === 'TITLE' ? 'Edit Title' : ( page === 'BOARD' ? 'Edit Categories & Score' : 'Edit Clues' )}</h2>
             {page === 'CLUE' && (
               <button type="button" className="button add" onClick={handleAddPage}>
                 + Add Page
@@ -435,68 +534,9 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
           {error && <div className="error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            {page === 'TITLE' && (
-              <div className="field row">
-                <label htmlFor="title">Title</label>
-                <input
-                  id="title"
-                  name="title"
-                  type="text"
-                  required
-                  value={tempBoardData.title || ''}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                />
-              </div>
-            )}
-
-            {page === 'BOARD' && (
-              <div className="categories-list">
-                {tempBoardData.categories?.map((category, catIdx) => (
-                  <div key={category.id || catIdx} className="category-item">
-                    <div className="category-header">
-                      <input
-                        type="text"
-                        value={category.name}
-                        placeholder="Category Name"
-                        onChange={(e) => handleCategoryNameChange(catIdx, e.target.value)}
-                        required
-                      />
-                      <button 
-                        type="button" 
-                        className="button dropdown" 
-                        onClick={() => toggleCategory(catIdx)}
-                      >
-                        {expandedCategories[catIdx] ? '▲ Clues' : '▼ Clues'}
-                      </button>
-                    </div>
-
-                    {expandedCategories[catIdx] && (
-                      <div className="clues-dropdown">
-                        {category.clues?.map((clue, clueIdx) => (
-                          <div key={clueIdx} className="clue-row">
-                            <label>Clue #{clueIdx + 1} Score:</label>
-                            <input
-                              type="text"
-                              value={clue.score}
-                              onChange={(e) => handleClueScoreChange(catIdx, clueIdx, e.target.value)}
-                              required
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {page === 'CLUE' && (
-              <div className="clues-container">
-                <div key={clueIdx} className="clue-edit-block">
-                  {renderPageDataSection(catIdx, clueIdx, (catIdx === -1 && clueIdx === -1) ? tempBoardData.final_jeopardy.pages : tempBoardData.categories[catIdx].clues[clueIdx].pages)}
-                </div>
-              </div>
-            )}
+            {page === 'TITLE' && renderTitleEdit()}
+            {page === 'BOARD' && renderBoardEdit()}
+            {page === 'CLUE' && renderClueEdit()}
 
             <div className="field row">
               <button className="cancel-button" type="button" disabled={loading} onClick={() => {
@@ -521,7 +561,10 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
       <button
         id="edit-tab"
         className="side-tab settings"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setError(null);
+          setIsOpen(true);
+        }}
       >
         <span className="tab-icon">&#9998;</span>
         <span className="tab-label">Edit Page</span>

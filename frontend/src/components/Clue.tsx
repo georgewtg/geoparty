@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { ClueData, PageData } from '../types/board';
 import { useAuth } from '../context/AuthContext';
-import { useVolume } from '../context/VolumeContext';
+import { useSettings } from '../context/SettingsContext';
+import { useShortcut } from '../hooks/useShortcut';
 import './Text.css'
 
 
@@ -12,7 +13,7 @@ type ClueProps = {
 
 const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
   const { user } = useAuth();
-  const { getAudioVolume } = useVolume();
+  const { getAudioVolume } = useSettings();
   const mediaRef = (node: HTMLMediaElement | null) => {
     if (node) node.volume = getAudioVolume();
   }
@@ -20,14 +21,21 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
   
   const handleNext = () => {
     const pages = clueData.pages;
-    if (!Array.isArray(pages) || !pages || pages.length === 0) onNext();
-    else if (currPageIdx < (pages.length - 1)) setCurrPageIdx((prev) => prev + 1);
-    else onNext();
+    if (!Array.isArray(pages) || !pages || pages.length === 0) return;
+    if (currPageIdx < (pages.length - 1)) setCurrPageIdx((prev) => prev + 1);
   }
 
   const handlePrevious = () => {
     if (currPageIdx > 0) setCurrPageIdx((prev) => prev - 1);
   }
+
+  // keyboard shortcut
+  useShortcut({
+    Escape: onNext,
+    ArrowLeft: handlePrevious,
+    ArrowRight: handleNext,
+    // ' ': handleNext
+  });
 
   const renderClue = (pages: PageData[][], fallbackText: string) => {
     if (!Array.isArray(pages) || !pages || pages.length === 0) return <span>{fallbackText}</span>;
@@ -62,6 +70,15 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
 
   return (
     <div className='page-container'>
+      {/* Top Left Return Button */}
+      <button
+        className="nav-btn top-left"
+        onClick={onNext}
+        aria-label="Go back"
+      >
+        ➜
+      </button>
+
       {/* Question Score */}
       <div className='score-display'>
         {clueData.score ?? ""}
@@ -86,6 +103,10 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
       <button 
         className="nav-btn right"
         onClick={handleNext}
+        disabled={
+          currPageIdx === (clueData.pages.length - 1) ||
+          !Array.isArray(clueData.pages) || !clueData.pages || clueData.pages.length === 0
+        }
         aria-label="Next page"
       >
         &#10095;

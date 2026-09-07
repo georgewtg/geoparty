@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logoutAccount } from '../api/account.api';
 import { useAuth } from '../context/AuthContext';
-import { useVolume } from '../context/VolumeContext';
+import { useSettings } from '../context/SettingsContext';
+import { useShortcut } from '../hooks/useShortcut';
 import './SideModal.css'
+import { ToggleSwitch } from '../components/ToggleSwitch';
 
 const SettingsModal: React.FC = () => {
   const navigate = useNavigate();
   const { setUser, setIsAuthenticated } = useAuth();
-  const { volume, setVolume } = useVolume();
+  const { volume, setVolume, hasScoreboard, setHasScoreboard } = useSettings();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const mouseDownTarget = useRef<EventTarget | null>(null);
+
+  useShortcut({
+    Escape: () => setIsOpen(false)
+  }, isOpen);
 
   const handleLogout = async () => {
     try {
@@ -25,15 +32,23 @@ const SettingsModal: React.FC = () => {
 
   const renderModal = () => {
     return (
-      <div id="settings-modal" className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setIsOpen(false)}>
+      <div
+        id="settings-modal"
+        className="modal-backdrop"
+        onMouseDown={(e) => mouseDownTarget.current = e.target}
+        onClick={(e) => e.target === e.currentTarget && mouseDownTarget.current === e.currentTarget && setIsOpen(false)}
+      >
         <div className="modal-content">
           <div className="modal-header">
             <h2>Settings</h2>
             <button id="close-button" className="close-button" onClick={() => setIsOpen(false)}>&times;</button>
           </div>
-          <div className="modal-body">
-            <div className='volume-control'>
-              <label htmlFor='volume-slider'>Volume:</label>
+          <div className="settings-list">
+            <div className='settings-item volume'>
+              <div className='volume-label'>
+                <label htmlFor='volume-slider'>Volume:</label>
+                <label htmlFor='volume-slider'>{volume}%</label>
+              </div>
 
               {/* volume slider */}
               <input
@@ -45,8 +60,14 @@ const SettingsModal: React.FC = () => {
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
               />
-              <span>{volume}%</span>
 
+            </div>
+            <div className='settings-item scoreboard'>
+              <ToggleSwitch
+                isChecked={hasScoreboard}
+                onChange={setHasScoreboard}
+                label='Scoreboard:'
+              />
             </div>
           </div>
           <button className="button logout" type="button" onClick={handleLogout}>
