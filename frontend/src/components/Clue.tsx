@@ -58,7 +58,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
           );
         case 'VIDEO':
           return (
-            <video key={index} ref={mediaRef} controls src={`${basePath}/image/${assetPath}/${element.value}`}>
+            <video key={index} ref={mediaRef} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
               Your browser does not support the video tag.
             </video>
           );
