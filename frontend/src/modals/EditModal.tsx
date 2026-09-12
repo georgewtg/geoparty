@@ -15,7 +15,7 @@ import { useShortcut } from "../hooks/useShortcut";
 import "./SideModal.css"
 
 
-type EditModalProps = {
+interface EditModalProps {
   page: BoardPage;
   boardId: string;
   boardData: BoardData;

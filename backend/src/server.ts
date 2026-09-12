@@ -1,36 +1,21 @@
 import 'dotenv/config';
 import http from 'http';
-// import { Server } from 'socket.io';
 import app from './app';
+import initSocket from './utils/socket';
 
 const port = process.env.PORT || 8000;
 const server = http.createServer(app);
-// const io = new Server(server, { 
-//   cors: {
-//     origin: process.env.CLIENT_URL,
-//     methods: ['GET', 'POST'],
-//     credentials: true
-//   }
-// });
 
-// io.on('connection', (socket) => {
-//   console.log(`User connected: ${socket.id}`);
+async function startServer() {
+  try {
+    await initSocket(server);
+    server.listen(port, () => {
+      console.log(`Server and WebSocket running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Failed to initialize server:', error);
+    process.exit(1);
+  }
+}
 
-//   // Join a room (sent from Board.tsx)
-//   socket.on('join-room', ({ roomId }) => {
-//     socket.join(roomId);
-//     console.log(`Socket ${socket.id} joined room: ${roomId}`);
-    
-//     // Notify others in the room
-//     socket.to(roomId).emit('player-joined', { socketId: socket.id });
-//   });
-
-//   // Handle disconnects
-//   socket.on('disconnect', () => {
-//     console.log(`User disconnected: ${socket.id}`);
-//   });
-// });
-
-server.listen(port, () => {
-  console.log(`Server and WebSocket running on port ${port}`);
-});
+startServer();

@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllTitles } from '../api/board.api';
-import CreateFormModal from '../modals/CreateFormModal';
+import CreateBoardModal from '../modals/CreateBoardModal';
+import CreateRoomModal from '../modals/CreateRoomModal';
+import JoinRoomModal from '../modals/JoinRoomModal';
 import type { BoardListItem } from '../types/board';
 import './Menu.css';
+
+
+type ModalType = 'CREATE_BOARD' | 'CREATE_ROOM' | 'JOIN_ROOM' | null;
 
 
 const Menu: React.FC = () => {
   const navigate = useNavigate();
   const [boards, setBoards] = useState<BoardListItem[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +46,7 @@ const Menu: React.FC = () => {
   return (
     <>
       <div className='board-list'>
-       <button onClick={() => setIsModalOpen(true)}>+ Create Board</button>
+       <button onClick={() => setActiveModal('CREATE_BOARD')}>+ Create Board</button>
         {boards.map((board) => {
           return (
             <div key={board.id} className='board-card' onClick={() => handleClick(board.id)}>
@@ -49,11 +54,24 @@ const Menu: React.FC = () => {
             </div>
           )
         })}
-       <CreateFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        />
       </div>
+      <div className='room-button-control'>
+        <button onClick={() => setActiveModal('CREATE_ROOM')}>Create Room</button>
+        <button onClick={() => setActiveModal('JOIN_ROOM')}>Join Room</button>
+      </div>
+      <CreateBoardModal
+        isOpen={activeModal === 'CREATE_BOARD'}
+        onClose={() => setActiveModal(null)}
+      />
+      <CreateRoomModal
+        boards={boards}
+        isOpen={activeModal === 'CREATE_ROOM'}
+        onClose={() => setActiveModal(null)}
+      />
+      <JoinRoomModal
+        isOpen={activeModal === 'JOIN_ROOM'}
+        onClose={() => setActiveModal(null)}
+      />
     </>
   );
 };

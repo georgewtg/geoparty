@@ -337,8 +337,7 @@ button.button.upload:disabled {
 
 /* misc */
 .page-data-row,
-.field.row,
-input {
+.field.row {
   flex: 1;
   font-size: 14px;
   padding: 8px 10px;

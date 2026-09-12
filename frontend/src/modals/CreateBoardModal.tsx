@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { createBoard } from "../api/board.api";
 import type { CreateBoardPayload } from "../types/board";
 import { useShortcut } from "../hooks/useShortcut";
-import './CreateFormModal.css';
+import './Modal.css';
 
-type CreateFormModalProps = {
+interface CreateBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
 };
 
-const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) => {
+const CreateBoardModal: React.FC<CreateBoardModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<CreateBoardPayload>({
     name: "GeoParty Template",
@@ -26,7 +26,7 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
     Escape: onClose
   }, isOpen);
 
-  if (!isOpen) return null; // Close Floating Form Modal
+  if (!isOpen) return null; // close modal
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -114,7 +114,20 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
           </div>
 
           <div className="field row">
-            <button className="cancel-button" type="button" onClick={onClose} disabled={loading}>
+            <button
+              className="cancel-button"
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                setFormData({
+                  name: "GeoParty Template",
+                  title: "GeoParty",
+                  num_of_categories: 6,
+                  num_of_questions: 5
+                });
+                onClose();
+              }}
+            >
               Cancel
             </button>
             <button className="submit-button" type="submit" disabled={loading}>
@@ -127,4 +140,4 @@ const CreateFormModal: React.FC<CreateFormModalProps> = ({ isOpen, onClose }) =>
   );
 };
 
-export default CreateFormModal;
+export default CreateBoardModal;

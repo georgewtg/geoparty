@@ -10,16 +10,16 @@
 }
 
 .grid-container.category {
-  width: auto;
+  width: 100%;
   height: auto;
-  grid-template-rows: repeat(1, 1fr);
-  grid-template-columns: none;
-  grid-auto-flow: column;
+
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 6), 1fr);
+  grid-template-rows: 1fr;
   padding-bottom: 4px;
 }
 
 .grid-cell {
-  container-type: inline-size;
   background-color: #000080;
   display: flex;
   align-items: center;
@@ -31,18 +31,23 @@
   cursor: default;
 }
 
+.grid-cell.disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .grid-cell.clickable {
   cursor: pointer;
   color: #ffcc00;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.grid-cell.clickable:hover {
+.grid-cell.clickable:not(.disabled):hover {
   background-color: #0000b3;
 }
 
 .grid-cell > span {
-  font-size: clamp(12px, 22cqi, 48px); 
+  font-size: clamp(14px, 6vmin, 48px);
   white-space: nowrap;
 }
 

@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { query } from "../db";
+import { query } from "../utils/db";
 
 
 const hashPassword = async (password: string) => {

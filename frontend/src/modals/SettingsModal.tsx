@@ -5,12 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { useShortcut } from '../hooks/useShortcut';
 import './SideModal.css'
-import { ToggleSwitch } from '../components/ToggleSwitch';
 
 const SettingsModal: React.FC = () => {
   const navigate = useNavigate();
   const { setUser, setIsAuthenticated } = useAuth();
-  const { volume, setVolume, hasScoreboard, setHasScoreboard } = useSettings();
+  const { volume, setVolume } = useSettings();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const mouseDownTarget = useRef<EventTarget | null>(null);
 
@@ -59,14 +58,6 @@ const SettingsModal: React.FC = () => {
                 max="100"
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
-              />
-
-            </div>
-            <div className='settings-item scoreboard'>
-              <ToggleSwitch
-                isChecked={hasScoreboard}
-                onChange={setHasScoreboard}
-                label='Scoreboard:'
               />
             </div>
           </div>

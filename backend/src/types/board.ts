@@ -1,4 +1,5 @@
 export type DataType = 'TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO';
+export type BoardPage = 'TITLE' | 'BOARD' | 'CLUE';
 
 export type BoardData = {
   title: string;

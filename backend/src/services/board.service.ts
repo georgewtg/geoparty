@@ -1,4 +1,4 @@
-import { query } from "../db";
+import { query } from "../utils/db";
 import { BoardData, CategoryData, ClueData, DataType, PageData } from "../types/board";
 import { updateAssetRefs } from "./asset.service";
 

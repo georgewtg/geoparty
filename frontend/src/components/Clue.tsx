@@ -1,37 +1,57 @@
 import { useState } from 'react';
+import { MediaItem } from './MediaItem';
 import type { ClueData, PageData } from '../types/board';
 import { useAuth } from '../context/AuthContext';
-import { useSettings } from '../context/SettingsContext';
 import { useShortcut } from '../hooks/useShortcut';
 import './Text.css'
 
 
-type ClueProps = {
+interface ClueProps {
   clueData: ClueData;
   onNext: () => void;
+  disabled?: boolean;
+  hostId?: string;
+  roomId?: string;
+  pageIndex?: number;
+  onPageChange?: (newIndex: number) => void;
 };
 
-const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
+const Clue: React.FC<ClueProps> = ({
+  clueData,
+  onNext,
+  disabled = false,
+  hostId = '',
+  roomId = '',
+  pageIndex: externalPageIdx,
+  onPageChange
+}) => {
   const { user } = useAuth();
-  const { getAudioVolume } = useSettings();
-  const mediaRef = (node: HTMLMediaElement | null) => {
-    if (node) node.volume = getAudioVolume();
-  }
-  const [currPageIdx, setCurrPageIdx] = useState(0);
+  const [localPageIdx, setLocalPageIdx] = useState(0);
+  const currPageIdx = externalPageIdx ?? localPageIdx;
+  
+  
+  const updatePageIndex = (newIndex: number) => {
+    if (disabled && externalPageIdx !== undefined) return;
+
+    if (onPageChange) onPageChange(newIndex);
+    else setLocalPageIdx(newIndex);
+  };
   
   const handleNext = () => {
+    if (disabled) return;
     const pages = clueData.pages;
     if (!Array.isArray(pages) || !pages || pages.length === 0) return;
-    if (currPageIdx < (pages.length - 1)) setCurrPageIdx((prev) => prev + 1);
+    if (currPageIdx < (pages.length - 1)) updatePageIndex(currPageIdx + 1);
   }
 
   const handlePrevious = () => {
-    if (currPageIdx > 0) setCurrPageIdx((prev) => prev - 1);
+    if (disabled) return;
+    if (currPageIdx > 0) updatePageIndex(currPageIdx - 1);
   }
 
   // keyboard shortcut
   useShortcut({
-    Escape: onNext,
+    Escape: () => !disabled && onNext(),
     ArrowLeft: handlePrevious,
     ArrowRight: handleNext,
     // ' ': handleNext
@@ -43,24 +63,26 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
     if (!Array.isArray(items) || !items || items.length === 0) return <span>{fallbackText}</span>;
     // const assetPath = "http://localhost:8000/assets";
     const basePath = `${import.meta.env.VITE_CLOUDINARY_BASE_URL}`;
-    const assetPath = `upload/geoparty/assets/${user?.id}`;
+    const assetPath = `upload/geoparty/assets/${(hostId !== '') ? hostId : user?.id}`;
 
     return items.map((element, index) => {
+      const mediaId = `page-${currPageIdx}-item-${index}`;
+      const mediaSrc = `${basePath}/video/${assetPath}/${element.value}`;
+
       switch (element.type) {
         case 'IMAGE':
-          console.log(`${assetPath}/${element.value}`)
           return <img key={index} src={`${basePath}/image/${assetPath}/${element.value}`} alt="clue" />;
         case 'AUDIO':
-          return (
-            <audio key={index} ref={mediaRef} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
-              Your browser does not support the audio element.
-            </audio>
-          );
         case 'VIDEO':
           return (
-            <video key={index} ref={mediaRef} controls src={`${basePath}/video/${assetPath}/${element.value}`}>
-              Your browser does not support the video tag.
-            </video>
+            <MediaItem
+              key={mediaId}
+              roomId={roomId!}
+              mediaId={mediaId}
+              type={element.type}
+              src={mediaSrc}
+              disabled={disabled}
+            />
           );
         default:
           return <span key={index}>{element.value}</span>;
@@ -75,6 +97,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
         className="nav-btn top-left"
         onClick={onNext}
         aria-label="Go back"
+        disabled={disabled}
       >
         ➜
       </button>
@@ -88,7 +111,7 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
       <button
         className="nav-btn left"
         onClick={handlePrevious}
-        disabled={currPageIdx === 0}
+        disabled={currPageIdx === 0 || disabled}
         aria-label="Previous page"
       >
         &#10094;
@@ -105,7 +128,8 @@ const Clue: React.FC<ClueProps> = ({ clueData, onNext }) => {
         onClick={handleNext}
         disabled={
           currPageIdx === (clueData.pages.length - 1) ||
-          !Array.isArray(clueData.pages) || !clueData.pages || clueData.pages.length === 0
+          !Array.isArray(clueData.pages) || !clueData.pages || clueData.pages.length === 0 ||
+          disabled
         }
         aria-label="Next page"
       >

@@ -22,7 +22,7 @@ export type BaseItem = {
   fill?: string;      // shapes/text
 };
 
-type CanvasItemProps = {
+interface CanvasItemProps {
   item: BaseItem;
   isSelected: boolean;
   onSelect: () => void;

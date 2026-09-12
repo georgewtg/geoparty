@@ -2,13 +2,14 @@ import { useRef } from 'react';
 import './Text.css';
 
 
-type TitleProps = {
+interface TitleProps {
   title: string;
   onNext: () => void;
+  disabled?: boolean;
 }
 
 
-const Title: React.FC<TitleProps> = ({ title, onNext }) => {
+const Title: React.FC<TitleProps> = ({ title, onNext, disabled = false }) => {
   const startPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -25,7 +26,7 @@ const Title: React.FC<TitleProps> = ({ title, onNext }) => {
       return; // ignore navigate click
     }
 
-    onNext(); // go to next page
+    if (!disabled) onNext(); // go to next page
   };
 
   return (

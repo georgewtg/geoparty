@@ -60,6 +60,11 @@
   flex-shrink: 0;
 }
 
+.player-media-disabled {
+  pointer-events: none;
+  user-select: none;
+}
+
 video::-webkit-media-controls-volume-slider,
 video::-webkit-media-controls-mute-button,
 audio::-webkit-media-controls-volume-slider,
@@ -110,6 +115,6 @@ audio::-webkit-media-controls-mute-button {
 .nav-btn:disabled {
   color: #666666;
   opacity: 0.2;
-  cursor: not-allowed;
   background: transparent;
+  cursor: default;
 }

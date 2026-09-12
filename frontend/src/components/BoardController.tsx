@@ -7,13 +7,10 @@ import Clue from "./Clue";
 import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
 import EditModal from "../modals/EditModal";
-import ScoreBoard from "../modals/ScoreboardModal";
-import { useSettings } from "../context/SettingsContext";
 
 
 const BoardController: React.FC = () => {
   const { boardId } = useParams();
-  const { hasScoreboard } = useSettings();
   const [page, setPage] = useState<BoardPage>('TITLE');
   const [board, setBoard] = useState<BoardItem | null>(null);
   const [selectedClueInfo, setSelectedClueInfo] = useState({ catIdx: -1, clueIdx: -1 });
@@ -45,9 +42,12 @@ const BoardController: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
   if (!board) return <div>Board not found</div>;
 
-  const handleSelectClue = (clueData: ClueData, catIdx: number, clueIdx: number) => {
+  const handleSelectClue = (catIdx: number, clueIdx: number) => {
     setSelectedClueInfo({ catIdx, clueIdx });
-    setClueData(clueData);
+
+    if (catIdx === -1 && clueIdx === -1) setClueData(board.board_data.final_jeopardy);
+    else setClueData(board.board_data.categories[catIdx].clues[clueIdx]);
+    
     setPage('CLUE');
   };
 
@@ -74,7 +74,6 @@ const BoardController: React.FC = () => {
         selectedClueInfo={selectedClueInfo}
         setClueData={setClueData}
       />
-      { hasScoreboard && <ScoreBoard />}
     </div>
   );
 };

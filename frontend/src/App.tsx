@@ -6,6 +6,7 @@ import Menu from './components/Menu';
 import Login from './components/Login';
 import Register from './components/Register';
 import BoardController from './components/BoardController';
+import RoomController from './components/RoomController';
 import { CanvasEditor } from './components/CanvasEditor';
 import './App.css';
 
@@ -25,6 +26,7 @@ const App: React.FC = () => {
       <Route element={<ProtectedRoute />}>
         <Route path='/menu' element={<Menu />} />
         <Route path='/board/:boardId' element={<BoardController />} />
+        <Route path='/room/:roomId' element={<RoomController />} />
         <Route path='/test' element={<CanvasEditor />} />
       </Route>
     </Routes>

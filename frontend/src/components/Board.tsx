@@ -1,53 +1,91 @@
-import React, { useState } from 'react';
-import type { BoardData, ClueData } from '../types/board';
+import React, { memo, useMemo, useState } from 'react';
+import type { BoardData } from '../types/board';
 import './Board.css';
 
 
-type BoardProps = {
+interface BoardProps {
   boardData: BoardData
-  onSelectClue: (clueData: ClueData, catIdx: number, clueIdx: number, final?: boolean) => void;
+  onSelectClue: (catIdx: number, clueIdx: number) => void;
+  disabled?: boolean;
+  visitedCells?: string[];
+  onCellClick?: (cellId: string) => void;
   defaultRows?: number;
   defaultCols?: number;
 };
 
+interface CellProps {
+  score: number | string;
+  isVisited: boolean;
+  isDisabled: boolean;
+  isFinal?: boolean;
+  onClick: () => void;
+};
 
-const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5, defaultCols = 6 }) => {
+
+const Cell = memo(({ score, isVisited, isDisabled, isFinal, onClick }: CellProps) => {
+  const baseClass = isFinal ? 'grid-cell final-box' : 'grid-cell';
+  const statusClass = isVisited ? 'visited' : 'clickable';
+  const disabledClass = isDisabled ? 'disabled' : '';
+
+  return (
+    <div
+      className={`${baseClass} ${statusClass} ${disabledClass}`}
+      onClick={onClick}
+    >
+      <span>{score}</span>
+    </div>
+  );
+});
+Cell.displayName = 'Cell';
+
+
+const Board: React.FC<BoardProps> = ({
+  boardData,
+  onSelectClue,
+  disabled = false,
+  visitedCells,
+  onCellClick,
+  defaultRows = 5,
+  defaultCols = 6 }) => {
   const categories = boardData.categories;
   const rows = categories[0].clues.length || defaultCols;
   const cols = categories.length || defaultRows;
   const totalCells = rows * cols;
 
   // Track Clicked Cells
-  const [visitedCells, setVisitedCells] = useState<string[]>(() => {
-    const saved = sessionStorage.getItem('visitedClues');
+  const [localVisitedCells, setLocalVisitedCells] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem('visitedCells');
     return saved ? JSON.parse(saved) : [];
   });
+  const activeVisitedCells = visitedCells ?? localVisitedCells;
+
+  const visitedSet = useMemo(
+    () => new Set(activeVisitedCells),
+    [activeVisitedCells]
+  );
+
+  const markVisitedCell = (cellId: string) => {
+    onCellClick?.(cellId);
+    if (!visitedCells && !localVisitedCells.includes(cellId)) {
+      const updated = [...localVisitedCells, cellId];
+      setLocalVisitedCells(updated);
+      sessionStorage.setItem('visitedCells', JSON.stringify(updated));
+    }
+  }
 
   const handleClick = (colIndex: number, rowIndex: number) => {
+    if (disabled) return;
+
     const cellId = `${colIndex}-${rowIndex}`;
-
-    if (!visitedCells.includes(cellId)) {
-      const updated = [...visitedCells, cellId];
-      setVisitedCells(updated);
-      sessionStorage.setItem('visitedClues', JSON.stringify(updated));
-    }
-
-    const selectedCategory = categories[colIndex];
-    const selectedClue = selectedCategory.clues[rowIndex];
-    if (selectedClue) onSelectClue(selectedClue, colIndex, rowIndex);
+    markVisitedCell(cellId);
+    onSelectClue(colIndex, rowIndex);
   }
 
   const handleClickFinal = () => {
-    const cellId = 'final';
+    if (disabled) return;
 
-    if (!visitedCells.includes(cellId)) {
-      const updated = [...visitedCells, cellId];
-      setVisitedCells(updated);
-      sessionStorage.setItem('visitedClues', JSON.stringify(updated));
-    }
-
-    const selectedClue = boardData.final_jeopardy;
-    if (selectedClue) onSelectClue(selectedClue, -1, -1, true);
+    markVisitedCell('final');
+    onSelectClue(-1, -1);
   }
 
   return (
@@ -73,26 +111,26 @@ const Board: React.FC<BoardProps> = ({ boardData, onSelectClue, defaultRows = 5,
           const score = categories?.[colIndex]?.clues?.[rowIndex]?.score ?? (rowIndex + 1) * 200;
 
           const cellId = `${colIndex}-${rowIndex}`;
-          const isVisited = visitedCells.includes(cellId);
 
           return (
-            <div
-              key={index}
-              className={`grid-cell ${isVisited ? 'visited' : 'clickable'}`}
+            <Cell
+              key={cellId}
+              score={score}
+              isVisited={visitedSet.has(cellId)}
+              isDisabled={disabled}
               onClick={() => handleClick(colIndex, rowIndex)}
-            >
-                <span>{score}</span>
-            </div>
+            />
           );
         })}
 
         {/* Final Jeopardy */}
-        <div
-          className="grid-cell final-box clickable"
+        <Cell
+          score="Final GeoParty"
+          isVisited={visitedSet.has('final')}
+          isDisabled={disabled}
+          isFinal
           onClick={handleClickFinal}
-        >
-          <span>Final GeoParty</span>
-        </div>
+        />
       </div>
     </>
   );

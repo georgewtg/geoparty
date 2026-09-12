@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { query } from '../db';
+import { query } from '../utils/db';
 
 // Call this endpoint when an asset is uploaded via frontend directly
 export const addAssetData = async (publicId: string, resourceType: string) => {
