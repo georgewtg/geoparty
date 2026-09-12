@@ -231,7 +231,14 @@ const RoomController: React.FC = () => {
       overflow: "hidden"
     }}>
       {pageMap[page] ?? <div>Page not found</div>}
-      <ScoreboardModal host={hostName} players={players} setPlayers={setPlayers} disabled={!isHost} onUpdateScore={handleUpdateScore} />
+      <ScoreboardModal
+        hostName={hostName}
+        roomId={roomId ?? ''}
+        players={players}
+        setPlayers={setPlayers}
+        disabled={!isHost}
+        onUpdateScore={handleUpdateScore}
+      />
     </div>
   );
 };

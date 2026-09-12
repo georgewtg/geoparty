@@ -3,14 +3,15 @@ import type { PlayerItem } from "../types/multiplayer";
 import './ScoreboardModal.css'
 
 interface ScoreboardModalProps {
-  host: string;
+  hostName: string;
+  roomId: string;
   players: Record<string, PlayerItem>;
   setPlayers: Dispatch<SetStateAction<Record<string, PlayerItem>>>;
   disabled?: boolean;
   onUpdateScore?: (playerId: string, score: number) => void;
 };
 
-const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ host, players, setPlayers, disabled = false, onUpdateScore }) => {
+const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, players, setPlayers, disabled = false, onUpdateScore }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   // update score locally on typing
@@ -37,9 +38,9 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ host, players, setPla
         role="button"
         tabIndex={0}
       >
-        <span className="scoreboard-host">Host: {host}</span>
+        <span className="scoreboard-host">Host: {hostName}</span>
         <span>{isCollapsed ? "▲" : "▼"}</span>
-        <div />
+        <span className="scoreboard-host">Code: {roomId}</span>
       </div>
 
       {!isCollapsed && (
