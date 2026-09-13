@@ -8,15 +8,33 @@ import { BoardPage, Player, PlayerItem, RoomItem, RoomState } from '../types/mul
 
 // socket initializer
 export const initSocket = async (server: HttpServer): Promise<Server> => {
+  const allowedOrigins = (process.env.CLIENT_URL ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  console.log('[socket] Path: /api/socketio');
+  console.log('[socket] Allowed origins:', allowedOrigins.length ? allowedOrigins : 'none');
+  console.log('[socket] Transports: polling, websocket');
+
   const io = new Server(server, {
     path: "/api/socketio",
     addTrailingSlash: false,
-    transports: ["websocket"],
+    transports: ["polling", "websocket"],
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },
+  });
+
+  io.engine.on('connection_error', (error) => {
+    console.error('[socket] Handshake error:', {
+      message: error.message,
+      code: error.code,
+      origin: error.req?.headers.origin,
+      url: error.req?.url,
+    });
   });
 
   // broadcast updated player list
@@ -33,6 +51,20 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
   };
 
   io.on("connection", (socket: Socket) => {
+    console.log('[socket] Client connected:', {
+      socketId: socket.id,
+      origin: socket.handshake.headers.origin ?? 'none',
+      address: socket.handshake.address,
+      transport: socket.conn.transport.name,
+    });
+
+    socket.conn.on('upgrade', () => {
+      console.log('[socket] Transport upgraded:', {
+        socketId: socket.id,
+        transport: socket.conn.transport.name,
+      });
+    });
+
     // create room event
     socket.on("create_room", async (data: { user: AccountData, boardId: string, password: string }) => {
       const roomId = crypto.randomBytes(3).toString("hex").toUpperCase();
@@ -199,7 +231,11 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
     });
 
     // handle disconnect event
-    socket.on("disconnect", async () => {
+    socket.on("disconnect", async (reason) => {
+      console.log('[socket] Client disconnected:', {
+        socketId: socket.id,
+        reason,
+      });
       const playerInfo = getPlayerInfo(socket.id);
       if (!playerInfo) return;
 
