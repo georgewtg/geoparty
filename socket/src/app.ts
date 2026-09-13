@@ -10,11 +10,14 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (requestOrigin, callback) => {
+    console.log('[http-cors] Request origin:', requestOrigin ?? 'none');
+
     if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
       callback(null, true);
       return;
     }
 
+    console.warn('[http-cors] Rejected origin:', requestOrigin);
     callback(new Error('Origin is not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
