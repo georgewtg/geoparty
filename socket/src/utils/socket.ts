@@ -4,8 +4,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import crypto from "node:crypto";
 import { delPlayerInfo, getPlayerInfo, getRoom, pubClient, redisClient, setPlayerInfo, setRoom, subClient } from './redis';
 import { AccountData } from '../types/account';
-import { BoardPage } from '../types/board';
-import { RoomState } from '../types/multiplayer';
+import { BoardPage, RoomState } from '../types/multiplayer';
 
 
 // socket initializer
