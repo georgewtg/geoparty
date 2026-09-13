@@ -1,16 +1,6 @@
-import { api } from "./axios";
 import { socket } from "./socket";
-import type { ApiResponse } from "../types/api";
 import type { AccountData } from "../types/account";
-import type { RoomItem } from "../types/multiplayer";
 import type { BoardPage } from "../types/board";
-
-export const fetchRoom = async (roomId: string): Promise<ApiResponse<RoomItem>> => {
-  const response = await api.get<ApiResponse<RoomItem>>(`/room/${roomId}`, {
-    baseURL: `${import.meta.env.VITE_SOCKET_URL}/api`
-  });
-  return response.data;
-};
 
 export const createRoom = (user: AccountData, boardId: string, password: string) => {
   socket.emit("create_room", { user: user, boardId: boardId, password: password });
