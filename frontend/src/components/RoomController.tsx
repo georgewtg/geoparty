@@ -5,10 +5,10 @@ import Board from "./Board";
 import Clue from "./Clue";
 import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
-import type { PlayerItem } from "../types/multiplayer";
+import type { PlayerItem, RoomItem } from "../types/multiplayer";
 import ScoreboardModal from "../modals/ScoreboardModal";
 import { fetchBoard } from "../api/board.api";
-import { changeCluePage, changePage, fetchRoom, rejoinRoom, selectClue, updateScore } from "../api/room.api";
+import { changeCluePage, changePage, rejoinRoom, selectClue, updateScore } from "../api/room.api";
 import { socket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
 
@@ -74,10 +74,9 @@ const RoomController: React.FC = () => {
   }, [roomId, user?.id]);
 
   useEffect(() => { // fetch board data
-    const loadBoard = async () => {
+    const loadBoard = async (roomData: RoomItem) => {
       try {
         if (!roomId) throw new Error("Room ID is missing");
-        const roomData = (await fetchRoom(roomId)).payload;
         const boardData = (await fetchBoard(roomData.boardId)).payload;
         setBoard(boardData);
 

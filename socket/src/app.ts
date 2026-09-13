@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import roomRouter from './routes/room.router';
 
 const app = express();
 
@@ -22,9 +21,6 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-
-// Mount Routes
-app.use('/api/room', roomRouter);
 
 
 export default app;

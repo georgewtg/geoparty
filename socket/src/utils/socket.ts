@@ -1,21 +1,13 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { createAdapter } from "@socket.io/redis-adapter";
 import crypto from "node:crypto";
-import { delPlayerInfo, getPlayerInfo, getRoom, pubClient, redisClient, setPlayerInfo, setRoom, subClient } from './redis';
+import { delPlayerInfo, getPlayerInfo, getRoom, setPlayerInfo, setRoom } from './socketData';
 import { AccountData } from '../types/account';
-import { BoardPage, RoomState } from '../types/multiplayer';
+import { BoardPage, Player, PlayerItem, RoomItem, RoomState } from '../types/multiplayer';
 
 
 // socket initializer
 export const initSocket = async (server: HttpServer): Promise<Server> => {
-  // connect redis clients
-  await Promise.all([
-    pubClient.connect(),
-    subClient.connect(),
-    redisClient.connect(),
-  ]);
-
   const io = new Server(server, {
     path: "/api/socketio",
     addTrailingSlash: false,
@@ -26,9 +18,6 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
       credentials: true,
     },
   });
-
-  // attach redis adapter
-  io.adapter(createAdapter(pubClient, subClient));
 
   // broadcast updated player list
   async function broadcastPlayersUpdates(roomId: string, roomState: RoomState) {
@@ -69,15 +58,15 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
           }
         }
       };
-      await setRoom(roomId, roomState);
-      await setPlayerInfo(roomId, socket.id, data.user.id);
+      setRoom(roomId, roomState);
+      setPlayerInfo(roomId, socket.id, data.user.id);
       socket.emit("room_created", roomId);
     });
 
     // join room event
     socket.on("join_room", async (data: { user: AccountData, roomId: string, password: string }) => {
       // check room exists
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState) {
         socket.emit("room_not_found");
         return;
@@ -97,14 +86,14 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
         isConnected: true,
       };
 
-      await setRoom(data.roomId, roomState);
-      await setPlayerInfo(data.roomId, socket.id, data.user.id);
+      setRoom(data.roomId, roomState);
+      setPlayerInfo(data.roomId, socket.id, data.user.id);
       socket.emit("room_joined");
     });
 
     // rejoin room event (confirm user has joined the room)
     socket.on("rejoin_room", async ( data: { roomId: string, userId: string }) => {
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState || !roomState.players[data.userId]) {
         socket.emit("room_not_found");
         return;
@@ -113,63 +102,83 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
       const player = roomState.players[data.userId];
       if (!player.isConnected || player.socketId !== socket.id) {
         if (player.socketId && player.socketId !== socket.id) {
-          await delPlayerInfo(player.socketId);
+          delPlayerInfo(player.socketId);
         }
 
         roomState.players[data.userId].socketId = socket.id;
         roomState.players[data.userId].isConnected = true;
 
-        await setRoom(data.roomId, roomState);
-        await setPlayerInfo(data.roomId, socket.id, data.userId);
+        setRoom(data.roomId, roomState);
+        setPlayerInfo(data.roomId, socket.id, data.userId);
       }
 
+      const transformedPlayers: Record<string, PlayerItem> = {};
+      if (roomState.players) {
+        for (const [playerId, player] of Object.entries(roomState.players as Record<string, Player>)) {
+          transformedPlayers[playerId] = {
+            username: player.username,
+            score: player.score ?? 0,
+          };
+        }
+      }
+  
+      const roomItem: RoomItem = {
+        isOpen: roomState.isOpen,
+        hostId: roomState.hostId,
+        boardId: roomState.boardId,
+        password: roomState.password,
+        buzzQueue: roomState.buzzQueue || [],
+        gameState: roomState.gameState,
+        players: transformedPlayers,
+      };
+
       socket.join(data.roomId);
-      socket.emit("room_rejoined");
+      socket.emit("room_rejoined", roomItem);
       broadcastPlayersUpdates(data.roomId, roomState);
     });
 
     // update score event
     socket.on("update_score", async (data: { roomId: string, playerId: string, score: number }) => {
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState) return;
       
       roomState.players[data.playerId].score = data.score;
-      await setRoom(data.roomId, roomState);
+      setRoom(data.roomId, roomState);
 
       socket.to(data.roomId).emit("score_updated", { playerId: data.playerId, score: data.score });
     });
 
     // change main page event
     socket.on("change_page", async (data: { roomId: string, page: BoardPage }) => {
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState) return;
       
       roomState.gameState.page = data.page;
-      await setRoom(data.roomId, roomState);
+      setRoom(data.roomId, roomState);
 
       socket.to(data.roomId).emit("page_changed", data.page);
     });
 
     // select clue, change to clue page, and update visited celss event
     socket.on("select_clue", async (data: { roomId: string, cellId: string }) => {
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState) return;
 
       roomState.gameState.page = 'CLUE';
       roomState.gameState.cellId = data.cellId;
       roomState.gameState.visitedCells.push(data.cellId);
-      await setRoom(data.roomId, roomState);
+      setRoom(data.roomId, roomState);
 
       socket.to(data.roomId).emit("clue_selected", data.cellId);
     });
 
     // change clue page event
     socket.on("change_clue_page", async (data: { roomId: string, index: number }) => {
-      const roomState = await getRoom(data.roomId);
+      const roomState = getRoom(data.roomId);
       if (!roomState) return;
 
       roomState.gameState.cluePageIdx = data.index;
-      await setRoom(data.roomId, roomState);
+      setRoom(data.roomId, roomState);
 
       socket.to(data.roomId).emit("clue_page_changed", data.index);
     });
@@ -191,16 +200,16 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
 
     // handle disconnect event
     socket.on("disconnect", async () => {
-      const playerInfo = await getPlayerInfo(socket.id);
+      const playerInfo = getPlayerInfo(socket.id);
       if (!playerInfo) return;
 
-      const roomState = await getRoom(playerInfo.roomId);
+      const roomState = getRoom(playerInfo.roomId);
       if (!roomState || !roomState.players[playerInfo.userId]) return;
 
       roomState.players[playerInfo.userId].isConnected = false;
-      await setRoom(playerInfo.roomId, roomState);
+      setRoom(playerInfo.roomId, roomState);
 
-      await delPlayerInfo(socket.id);
+      delPlayerInfo(socket.id);
       broadcastPlayersUpdates(playerInfo.roomId, roomState);
     });
   });
