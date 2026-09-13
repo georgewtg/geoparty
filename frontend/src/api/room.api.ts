@@ -6,7 +6,9 @@ import type { RoomItem } from "../types/multiplayer";
 import type { BoardPage } from "../types/board";
 
 export const fetchRoom = async (roomId: string): Promise<ApiResponse<RoomItem>> => {
-  const response = await api.get<ApiResponse<RoomItem>>(`/room/${roomId}`);
+  const response = await api.get<ApiResponse<RoomItem>>(`/room/${roomId}`, {
+    baseURL: `${import.meta.env.VITE_SOCKET_URL}/api`
+  });
   return response.data;
 };
 

@@ -13,6 +13,7 @@ interface ScoreboardModalProps {
 
 const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, players, setPlayers, disabled = false, onUpdateScore }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [copied, setCopied] = useState(false);
 
   // update score locally on typing
   const handleScoreChange = (playerId: string, newScore: string) => {
@@ -31,6 +32,19 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, pla
     });
   };
 
+  // copy toom code when clicked
+  const handleCopy = async (e: React.MouseEvent<HTMLSpanElement>) => {
+    e.stopPropagation();
+    
+    try {
+      await navigator.clipboard.writeText(roomId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset feedback after 2s
+    } catch (err) {
+      console.error('Failed to copy code: ', err);
+    }
+  };
+
   return (
     <div className="scoreboard-container">
       <div className="scoreboard-header"
@@ -40,7 +54,7 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, pla
       >
         <span className="scoreboard-host">Host: {hostName}</span>
         <span>{isCollapsed ? "▲" : "▼"}</span>
-        <span className="scoreboard-host">Code: {roomId}</span>
+        <span className="scoreboard-code" onClick={handleCopy}>Code: {roomId} {copied ? 'Copied!' : ''}</span>
       </div>
 
       {!isCollapsed && (
