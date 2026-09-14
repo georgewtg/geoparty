@@ -11,7 +11,6 @@ const allowedOrigins = [
 app.use(cors({
   origin: (requestOrigin, callback) => {
     console.log('[http-cors] Request origin:', requestOrigin ?? 'none');
-
     if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
       callback(null, true);
       return;
@@ -25,5 +24,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get('/api/health', (_request, response) => {
+  response.status(200).json({
+    status: 'ok',
+    service: 'socket',
+  });
+});
 
 export default app;

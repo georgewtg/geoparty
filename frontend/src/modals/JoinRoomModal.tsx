@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../api/socket";
+import { socket, wakeSocket } from "../api/socket";
 import { joinRoom } from "../api/room.api";
 import type { JoinRoomPayload } from "../types/multiplayer";
 import { useAuth } from "../context/AuthContext";
@@ -67,6 +67,8 @@ const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose }) => {
 
     try {
       if (!user) throw new Error("User must be logged in to join a room");
+      await wakeSocket();
+      if (!socket.connected) socket.connect();
       joinRoom(user, formData.room_id, formData.password);
 
     } catch (error) {

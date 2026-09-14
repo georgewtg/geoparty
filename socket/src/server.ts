@@ -15,11 +15,6 @@ server.on('upgrade', (request) => {
   });
 });
 
-console.log('[startup] NODE_ENV:', process.env.NODE_ENV ?? 'undefined');
-console.log('[startup] PORT:', port);
-console.log('[startup] CLIENT_URL:', process.env.CLIENT_URL ?? 'undefined');
-console.log('[startup] Initializing Socket.IO');
-
 initSocket(server).then(() => {
   server.listen(port, () => {
     console.log(`[startup] HTTP and WebSocket server listening on port ${port}`);

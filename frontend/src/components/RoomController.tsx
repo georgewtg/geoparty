@@ -9,7 +9,7 @@ import type { PlayerItem, RoomItem } from "../types/multiplayer";
 import ScoreboardModal from "../modals/ScoreboardModal";
 import { fetchBoard } from "../api/board.api";
 import { changeCluePage, changePage, rejoinRoom, selectClue, updateScore } from "../api/room.api";
-import { socket } from "../api/socket";
+import { socket, wakeSocket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -70,7 +70,16 @@ const RoomController: React.FC = () => {
     }
 
     setLoading(true);
-    rejoinRoom(roomId, user.id);
+    wakeSocket()
+      .then(() => {
+        if (!socket.connected) socket.connect();
+        rejoinRoom(roomId, user.id);
+      })
+      .catch((error) => {
+        console.error(error);
+        setError("Failed to connect to the game server");
+        setLoading(false);
+      });
   }, [roomId, user?.id]);
 
   useEffect(() => { // fetch board data
