@@ -81,6 +81,10 @@
   box-sizing: border-box;
 }
 
+.player-name.disconnected {
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .player-score-input {
   background: transparent;
   border: 1px solid #ffcc00;

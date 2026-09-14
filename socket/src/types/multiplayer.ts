@@ -25,6 +25,7 @@ export type RoomState = {
 export type PlayerItem = {
   username: string;
   score: number;
+  isConnected: boolean;
 };
 
 export type GameState = {

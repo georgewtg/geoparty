@@ -92,6 +92,7 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
       };
       setRoom(roomId, roomState);
       setPlayerInfo(roomId, socket.id, data.user.id);
+      socket.join(roomId);
       socket.emit("room_created", roomId);
     });
 
@@ -120,7 +121,9 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
 
       setRoom(data.roomId, roomState);
       setPlayerInfo(data.roomId, socket.id, data.user.id);
+      socket.join(data.roomId);
       socket.emit("room_joined");
+      broadcastPlayersUpdates(data.roomId, roomState);
     });
 
     // rejoin room event (confirm user has joined the room)
@@ -136,13 +139,13 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
         if (player.socketId && player.socketId !== socket.id) {
           delPlayerInfo(player.socketId);
         }
-
-        roomState.players[data.userId].socketId = socket.id;
-        roomState.players[data.userId].isConnected = true;
-
-        setRoom(data.roomId, roomState);
-        setPlayerInfo(data.roomId, socket.id, data.userId);
       }
+
+      roomState.players[data.userId].socketId = socket.id;
+      roomState.players[data.userId].isConnected = true;
+
+      setRoom(data.roomId, roomState);
+      setPlayerInfo(data.roomId, socket.id, data.userId);
 
       const transformedPlayers: Record<string, PlayerItem> = {};
       if (roomState.players) {
@@ -150,6 +153,7 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
           transformedPlayers[playerId] = {
             username: player.username,
             score: player.score ?? 0,
+            isConnected: player.isConnected,
           };
         }
       }
@@ -242,7 +246,10 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
       const roomState = getRoom(playerInfo.roomId);
       if (!roomState || !roomState.players[playerInfo.userId]) return;
 
-      roomState.players[playerInfo.userId].isConnected = false;
+      const player = roomState.players[playerInfo.userId];
+      if (player.socketId !== socket.id) return;
+
+      player.isConnected = false;
       setRoom(playerInfo.roomId, roomState);
 
       delPlayerInfo(socket.id);

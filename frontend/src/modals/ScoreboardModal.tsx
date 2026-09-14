@@ -62,7 +62,7 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, pla
           {Object.entries(players).map(([playerId, player]) => (
             <div key={playerId} className="player-score-card">
               {/* Name */}
-              <span className="player-name">{player.username}</span>
+              <span className={`player-name${player.isConnected ? '' : ' disconnected'}`}>{player.username}{player.isConnected ? '' : ' ❌'}</span>
 
               {/* Score */}
               <input

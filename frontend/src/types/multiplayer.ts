@@ -11,6 +11,7 @@ export type Player = {
 export type PlayerItem = {
   username: string;
   score: number;
+  isConnected: boolean;
 };
 
 export type GameState = {

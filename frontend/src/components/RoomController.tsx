@@ -70,16 +70,33 @@ const RoomController: React.FC = () => {
     }
 
     setLoading(true);
+    let active = true;
+    let rejoinedSocketId: string | undefined;
+    const rejoinCurrentRoom = () => {
+      if (!active || !socket.id || socket.id === rejoinedSocketId) return;
+      rejoinedSocketId = socket.id;
+      rejoinRoom(roomId, user.id);
+    };
+
+    socket.on("connect", rejoinCurrentRoom);
+
     wakeSocket()
       .then(() => {
-        if (!socket.connected) socket.connect();
-        rejoinRoom(roomId, user.id);
+        if (!active) return;
+        if (socket.connected) rejoinCurrentRoom();
+        else socket.connect();
       })
       .catch((error) => {
+        if (!active) return;
         console.error(error);
         setError("Failed to connect to the game server");
         setLoading(false);
       });
+
+    return () => {
+      active = false;
+      socket.off("connect", rejoinCurrentRoom);
+    };
   }, [roomId, user?.id]);
 
   useEffect(() => { // fetch board data
