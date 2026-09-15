@@ -49,3 +49,40 @@ export const updateAssetRefs = async (oldPublicIds: string[], newPublicIds: stri
     throw error;
   }
 };
+
+const getCloudinaryResourceType = (resourceType: string) => {
+  return resourceType.toUpperCase() === 'IMAGE' ? 'image' : 'video';
+};
+
+export const deleteUnreferencedAssets = async () => {
+  const result = await query(
+    `SELECT public_id, resource_type
+     FROM media_assets
+     WHERE ref_count <= 0`
+  );
+
+  let deletedCount = 0;
+
+  for (const asset of result.rows) {
+    const cloudinaryResult = await cloudinary.uploader.destroy(asset.public_id, {
+      resource_type: getCloudinaryResourceType(asset.resource_type),
+      type: 'upload',
+      invalidate: true
+    });
+
+    if (cloudinaryResult.result !== 'ok' && cloudinaryResult.result !== 'not found') {
+      throw new Error(`Failed to delete Cloudinary asset ${asset.public_id}`);
+    }
+
+    const deleted = await query(
+      `DELETE FROM media_assets
+       WHERE public_id = $1 AND ref_count <= 0
+       RETURNING public_id`,
+      [asset.public_id]
+    );
+
+    deletedCount += deleted.rows.length;
+  }
+
+  return deletedCount;
+};
