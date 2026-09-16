@@ -23,7 +23,7 @@ export type GameState = {
 
 export type BuzzEvent= {
   name: string;
-  time: number;
+  pressTime: number;
 };
 
 export type RoomItem = {

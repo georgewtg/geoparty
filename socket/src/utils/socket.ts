@@ -70,7 +70,7 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
       const roomId = crypto.randomBytes(3).toString("hex").toUpperCase();
 
       const roomState = {
-        isOpen: true,
+        isOpen: true, // buzzer lock or open state
         hostId: data.user.id,
         boardId: data.boardId,
         password: data.password,
@@ -233,6 +233,58 @@ export const initSocket = async (server: HttpServer): Promise<Server> => {
     socket.on("seek_media", async (data: { roomId: string, mediaId: string, currentTime: number }) => {
       socket.to(data.roomId).emit("media_seeked", { mediaId: data.mediaId, currentTime: data.currentTime });
     });
+
+
+    // reset buzzer event
+    socket.on("reset_buzzer", async (roomId: string) => {
+      const roomState = getRoom(roomId);
+      if (!roomState) return;
+
+      roomState.buzzQueue = [];
+      setRoom(roomId, roomState);
+
+      io.in(roomId).emit("buzzer_reseted");
+    });
+
+    // toggle buzzer lock event
+    socket.on("toggle_lock", async (data: { roomId: string, isOpen: boolean }) => {
+      const roomState = getRoom(data.roomId);
+      if (!roomState) return;
+
+      roomState.isOpen = data.isOpen;
+      setRoom(data.roomId, roomState);
+
+      io.in(data.roomId).emit("buzzer_state_changed", data.isOpen);
+    });
+
+    // send buzzer information event
+    socket.on("send_buzzer", async (data: { roomId: string, name: string, pressTime: number }) => {
+      const roomState = getRoom(data.roomId);
+      if (!roomState) return;
+      if (roomState.buzzQueue.some((queued) => queued.name === data.name)) return;
+
+      const now = Date.now();
+      const MAX_FUTURE_MS = 2000; // allows 2 sec fast-drift
+      const MAX_PAST_MS   = 5000; // allows 5 sec network latency
+      let pressedTime;
+
+      if (data.pressTime > now + MAX_FUTURE_MS || data.pressTime < now - MAX_PAST_MS) {
+        pressedTime = now;
+      } else {
+        pressedTime = data.pressTime;
+      }
+
+      roomState.buzzQueue.push({
+        name: data.name,
+        pressTime: data.pressTime
+      });
+      roomState.buzzQueue.sort((a, b) => a.pressTime - b.pressTime);
+      setRoom(data.roomId, roomState);
+
+      socket.emit("buzzer_sent");
+      io.in(data.roomId).emit("queue_updated", roomState.buzzQueue);
+    });
+
 
     // handle disconnect event
     socket.on("disconnect", async (reason) => {

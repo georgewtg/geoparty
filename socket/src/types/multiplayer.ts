@@ -1,7 +1,7 @@
 export type BoardPage = 'TITLE' | 'BOARD' | 'CLUE';
 
 export type BuzzEvent = {
-  userId: string;
+  name: string;
   pressTime: number;
 }
 
