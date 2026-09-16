@@ -6,6 +6,7 @@ import accountRouter from './routes/account.router';
 import boardRouter from './routes/board.router';
 import uploadRouter from './routes/upload.router';
 import assetRouter from './routes/asset.router';
+import cronRouter from './routes/cron.router';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/board', boardRouter);
 app.use('/api/upload', uploadRouter)
 app.use('/api/asset', assetRouter);
+app.use('/api/cron', cronRouter);
 
 
 export default app;

@@ -91,7 +91,7 @@ const Board: React.FC<BoardProps> = ({
   return (
     <>
       {/* Categories */}
-      <div className='grid-container category'>
+      <div className='grid-container category' style={{ '--cols': cols, } as React.CSSProperties}>
         {Array.from({ length: cols }).map((_, index) => {
           const category = categories[index];
           

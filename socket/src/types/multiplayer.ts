@@ -1,7 +1,7 @@
 export type BoardPage = 'TITLE' | 'BOARD' | 'CLUE';
 
 export type BuzzEvent = {
-  userId: string;
+  name: string;
   pressTime: number;
 }
 
@@ -25,6 +25,7 @@ export type RoomState = {
 export type PlayerItem = {
   username: string;
   score: number;
+  isConnected: boolean;
 };
 
 export type GameState = {

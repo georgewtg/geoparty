@@ -1,0 +1,30 @@
+.buzzer-container {
+  position: relative;
+  width: 6rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  padding-top: 10dvh;
+  gap: 0.5rem;
+  background-color: #000080;
+}
+
+.buzzer-container .button {
+  width: 5rem;
+  color: black;
+  background-color: #ffad33;
+}
+
+.buzzer-container .button.disabled {
+  background-color: gray;
+  pointer-events: none;
+}
+
+.buzzer-container .button.buzzer {
+  border-radius: 50%;
+  height: 5rem;
+}
+
+.buzzer-container .buzzer-name {
+  color: white;
+}

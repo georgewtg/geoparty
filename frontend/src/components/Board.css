@@ -10,11 +10,7 @@
 }
 
 .grid-container.category {
-  width: 100%;
   height: auto;
-
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 6), 1fr);
   grid-template-rows: 1fr;
   padding-bottom: 4px;
 }

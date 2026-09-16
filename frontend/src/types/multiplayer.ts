@@ -11,6 +11,7 @@ export type Player = {
 export type PlayerItem = {
   username: string;
   score: number;
+  isConnected: boolean;
 };
 
 export type GameState = {
@@ -22,7 +23,7 @@ export type GameState = {
 
 export type BuzzEvent= {
   name: string;
-  time: number;
+  pressTime: number;
 };
 
 export type RoomItem = {

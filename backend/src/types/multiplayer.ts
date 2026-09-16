@@ -1,7 +1,7 @@
 import { BoardPage } from "./board";
 
 export type BuzzEvent = {
-  userId: string;
+  name: string;
   pressTime: number;
 }
 

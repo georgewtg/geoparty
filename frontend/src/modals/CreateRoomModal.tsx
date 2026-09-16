@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../api/socket";
+import { socket, wakeSocket } from "../api/socket";
 import { createRoom } from "../api/room.api";
 import type { BoardListItem } from "../types/board";
 import type { CreateRoomPayload } from "../types/multiplayer";
@@ -55,6 +55,8 @@ const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ boards, isOpen, onClo
 
     try {
       if (!user) throw new Error("User must be logged in to create a room");
+      await wakeSocket();
+      if (!socket.connected) socket.connect();
       createRoom(user, formData.board_id, formData.password);
 
     } catch (error) {

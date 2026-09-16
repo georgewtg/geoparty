@@ -5,12 +5,14 @@ import Board from "./Board";
 import Clue from "./Clue";
 import type { BoardItem, BoardPage } from "../types/board";
 import type { ClueData } from "../types/board";
-import type { PlayerItem, RoomItem } from "../types/multiplayer";
+import type { BuzzEvent, PlayerItem, RoomItem } from "../types/multiplayer";
 import ScoreboardModal from "../modals/ScoreboardModal";
+import BuzzerModal from "../modals/BuzzerModal";
 import { fetchBoard } from "../api/board.api";
 import { changeCluePage, changePage, rejoinRoom, selectClue, updateScore } from "../api/room.api";
-import { socket } from "../api/socket";
+import { socket, wakeSocket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
+import './RoomController.css'
 
 
 const RoomController: React.FC = () => {
@@ -23,6 +25,8 @@ const RoomController: React.FC = () => {
   const [hostId, setHostId] = useState<string>('');
   const [hostName, setHostName] = useState<string>('');
   const [players, setPlayers] = useState<Record<string, PlayerItem>>({} as Record<string, PlayerItem>);
+  const [buzzQueue, setBuzzQueue] = useState<BuzzEvent[]>([]);
+  const [initialIsUnlocked, setInitialIsUnlocked] = useState<boolean>(true);
 
   const [visitedCells, setVisitedCells] = useState<string[]>([]);
   const [clueData, setClueData] = useState<ClueData>({ score: "", pages: [] });
@@ -70,7 +74,33 @@ const RoomController: React.FC = () => {
     }
 
     setLoading(true);
-    rejoinRoom(roomId, user.id);
+    let active = true;
+    let rejoinedSocketId: string | undefined;
+    const rejoinCurrentRoom = () => {
+      if (!active || !socket.id || socket.id === rejoinedSocketId) return;
+      rejoinedSocketId = socket.id;
+      rejoinRoom(roomId, user.id);
+    };
+
+    socket.on("connect", rejoinCurrentRoom);
+
+    wakeSocket()
+      .then(() => {
+        if (!active) return;
+        if (socket.connected) rejoinCurrentRoom();
+        else socket.connect();
+      })
+      .catch((error) => {
+        if (!active) return;
+        console.error(error);
+        setError("Failed to connect to the game server");
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      socket.off("connect", rejoinCurrentRoom);
+    };
   }, [roomId, user?.id]);
 
   useEffect(() => { // fetch board data
@@ -82,6 +112,8 @@ const RoomController: React.FC = () => {
 
         const hostId = roomData.hostId;
         setHostId(hostId);
+        setBuzzQueue(roomData.buzzQueue);
+        setInitialIsUnlocked(roomData.isOpen);
         const { [hostId]: hostPlayer, ...filteredPlayers } = roomData.players;
 
         if (hostId === user?.id) setIsHost(true);
@@ -222,14 +254,20 @@ const RoomController: React.FC = () => {
   };
 
   return (
-    <div style={{
-      width: "100%",
-      height: "100dvh",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden"
-    }}>
-      {pageMap[page] ?? <div>Page not found</div>}
+    <div className="room-container">
+      <div className="content-buzzer-container">
+        <div className="page-item">
+          {pageMap[page] ?? <div>Page not found</div>}
+        </div>
+        <BuzzerModal
+          roomId={roomId ?? ''}
+          username={user?.username || ''}
+          buzzQueue={buzzQueue}
+          setBuzzQueue={setBuzzQueue}
+          initialIsUnlocked={initialIsUnlocked}
+          isHost={isHost}
+        />
+      </div>
       <ScoreboardModal
         hostName={hostName}
         roomId={roomId ?? ''}

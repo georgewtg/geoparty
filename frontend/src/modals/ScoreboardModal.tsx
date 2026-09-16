@@ -57,26 +57,24 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({ hostName, roomId, pla
         <span className="scoreboard-code" onClick={handleCopy}>Code: {roomId} {copied ? 'Copied!' : ''}</span>
       </div>
 
-      {!isCollapsed && (
-        <div className="scores-grid">
-          {Object.entries(players).map(([playerId, player]) => (
-            <div key={playerId} className="player-score-card">
-              {/* Name */}
-              <span className="player-name">{player.username}</span>
+      <div className={`scores-grid ${isCollapsed ? 'collapsed' : ''}`}>
+        {Object.entries(players).map(([playerId, player]) => (
+          <div key={playerId} className="player-score-card">
+            {/* Name */}
+            <span className={`player-name${player.isConnected ? '' : ' disconnected'}`}>{player.username}{player.isConnected ? '' : ' ❌'}</span>
 
-              {/* Score */}
-              <input
-                type="number"
-                className="player-score-input"
-                value={player.score}
-                onChange={(e) => handleScoreChange(playerId, e.target.value)}
-                onBlur={() => onUpdateScore?.(playerId, player.score)}
-                disabled={disabled}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+            {/* Score */}
+            <input
+              type="number"
+              className="player-score-input"
+              value={player.score}
+              onChange={(e) => handleScoreChange(playerId, e.target.value)}
+              onBlur={() => onUpdateScore?.(playerId, player.score)}
+              disabled={disabled}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
