@@ -10,7 +10,7 @@ import ScoreboardModal from "../modals/ScoreboardModal";
 import BuzzerModal from "../modals/BuzzerModal";
 import { fetchBoard } from "../api/board.api";
 import { changeCluePage, changePage, rejoinRoom, selectClue, updateScore } from "../api/room.api";
-import { socket, wakeSocket } from "../api/socket";
+import { socket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
 import './RoomController.css'
 
@@ -84,18 +84,8 @@ const RoomController: React.FC = () => {
 
     socket.on("connect", rejoinCurrentRoom);
 
-    wakeSocket()
-      .then(() => {
-        if (!active) return;
-        if (socket.connected) rejoinCurrentRoom();
-        else socket.connect();
-      })
-      .catch((error) => {
-        if (!active) return;
-        console.error(error);
-        setError("Failed to connect to the game server");
-        setLoading(false);
-      });
+    if (socket.connected) rejoinCurrentRoom();
+    else socket.connect();
 
     return () => {
       active = false;

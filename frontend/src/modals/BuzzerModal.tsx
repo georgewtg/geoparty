@@ -2,6 +2,7 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { BuzzEvent } from '../types/multiplayer';
 import { socket } from '../api/socket';
 import { resetBuzzer, sendBuzzer, toggleBuzzerLock } from '../api/buzzer.api';
+import { useShortcut } from '../hooks/useShortcut';
 import './BuzzerModal.css'
 
 interface BuzzerModalProps {
@@ -44,7 +45,7 @@ const BuzzerModal: React.FC<BuzzerModalProps> = ({ roomId, username, buzzQueue=[
 
     return () => {
       socket.off("buzzer_sent", handleBuzzerSent);
-      socket.off("update_queue", handleUpdateQueue);
+      socket.off("queue_updated", handleUpdateQueue);
       socket.off("buzzer_state_changed", handleBuzzerState);
       socket.off("buzzer_reseted", handleBuzzerReseted);
     };
@@ -61,9 +62,14 @@ const BuzzerModal: React.FC<BuzzerModalProps> = ({ roomId, username, buzzQueue=[
   };
 
   const handleBuzz = () => {
-    if (hasBuzzed) return;
+    if (isHost || !isUnlocked || hasBuzzed) return;
     sendBuzzer(roomId, username, Date.now())
   };
+
+  useShortcut({
+    ' ': handleBuzz
+  });
+
 
   return (
     <div className="buzzer-container">
@@ -96,7 +102,7 @@ const BuzzerModal: React.FC<BuzzerModalProps> = ({ roomId, username, buzzQueue=[
       )}
         
       {buzzQueue.length > 0 ? (
-        buzzQueue.map((queued) => <span className='buzzer-name'>{queued.name}</span>)
+        buzzQueue.map((queued, index) => <span key={index} className='buzzer-name'>{queued.name}</span>)
       ) : (
         <span>EMPTY</span>
       )}
