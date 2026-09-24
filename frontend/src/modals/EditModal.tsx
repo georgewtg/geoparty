@@ -392,8 +392,6 @@ const EditModal: React.FC<EditModalProps> = ({ page, boardId, boardData, setBoar
                         <svg 
                           className="spinner" 
                           viewBox="0 0 24 24" 
-                          width="16" 
-                          height="16" 
                           fill="none" 
                           stroke="currentColor" 
                           strokeWidth="2.5" 
