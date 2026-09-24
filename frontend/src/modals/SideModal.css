@@ -232,6 +232,7 @@
   height: 30px;
   font-size: 15px;
   padding: 5px;
+  width: 100%;
 }
 
 
@@ -289,6 +290,7 @@
   background-color: #17a2b8;
   color: #ffffff;
   user-select: none;
+  padding: 0.4rem;
 }
 
 .button.upload[disabled],
